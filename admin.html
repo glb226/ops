@@ -1,0 +1,1126 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网点运维管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body{background:#e3f2fd;margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px}
+        .sidebar{background:#1976d2;color:#fff;position:fixed;width:180px;height:100%;left:0;top:0;z-index:100}
+        .sidebar .logo{background:#1565c0;padding:15px;text-align:center;font-size:15px;font-weight:bold}
+        .sidebar a{color:#fff;padding:12px 15px;display:block;text-decoration:none;border-left:3px solid transparent}
+        .sidebar a:hover,.sidebar a.active{background:#1e88e5;border-left-color:#fff}
+        .main-content{margin-left:180px;padding:20px;min-height:100vh}
+        .page-title{font-size:18px;font-weight:bold;margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid #1976d2}
+        .status-badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500}
+        .status-响应中{color:#007bff;background:#e7f1ff}
+        .status-审批中{color:#6f42c1;background:#f3e8ff}
+        .status-已完成{color:#28a745;background:#d4edda}
+        .card{border:none;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);margin-bottom:15px}
+        .card-header{background:#fff;border-bottom:1px solid #eee;padding:12px 15px;font-weight:600}
+        .btn-primary{background:#1976d2;border:none;color:#fff}
+        .btn-primary:hover{background:#1565c0}
+        table{font-size:13px;width:100%}
+        th{background:#f8f9fa;padding:10px;text-align:left;font-weight:600;color:#666;font-size:12px}
+        td{padding:10px;border-bottom:1px solid #eee}
+        .chart-container{position:relative;height:200px}
+        .status-select{width:80px;padding:2px 4px;font-size:11px;border-radius:4px;border:1px solid #ddd;background:#fff}
+        .clickable-num{cursor:pointer;color:#007bff;font-weight:bold}
+        .clickable-num:hover{text-decoration:underline}
+        @media(max-width:768px){
+            .sidebar{display:none}
+            .main-content{margin:0;padding:15px}
+        }
+    </style>
+</head>
+<body>
+<div id="main-system">
+    <div class="sidebar d-none d-md-block">
+        <div class="logo d-flex align-items-center justify-content-center gap-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <span>网点运维</span>
+        </div>
+        <a href="#" onclick="showPage('generate');return false;" class="active d-flex align-items-center gap-2" id="nav-generate">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            <span>工单生成</span>
+        </a>
+        <a href="#" onclick="showPage('workorders');return false;" class="d-flex align-items-center gap-2" id="nav-workorders">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span>工单管理</span>
+        </a>
+        <a href="#" onclick="showPage('dashboard');return false;" class="d-flex align-items-center gap-2" id="nav-dashboard">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>数据看板</span>
+        </a>
+        <a href="#" onclick="showPage('vendors');return false;" class="d-flex align-items-center gap-2" id="nav-vendors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>运维商</span>
+        </a>
+        <a href="#" onclick="showPage('warehouse');return false;" class="d-flex align-items-center gap-2" id="nav-warehouse">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>仓储管理</span>
+        </a>
+    </div>
+    <div class="main-content">
+        <div id="page-generate">
+            <div class="page-title d-flex align-items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                工单生成
+            </div>
+            <div class="card">
+                <div class="card-header">粘贴工单信息</div>
+                <div class="card-body">
+                    <textarea class="form-control mb-2" id="ai-input" rows="5" placeholder="粘贴工单信息，如：
+报修部门：xxx
+报修人及联系电话：xxx 138xxxx
+具体报修项目：xxx"></textarea>
+                    <button class="btn btn-primary btn-sm" onclick="analyzeWorkorder()">AI智能分析</button>
+                </div>
+            </div>
+            <div class="card" id="analysis-result" style="display:none;">
+                <div class="card-header">分析结果</div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6"><label class="small text-muted">机构</label><input class="form-control form-control-sm" id="edit-dept"></div>
+                        <div class="col-6"><label class="small text-muted">报修人</label><input class="form-control form-control-sm" id="edit-person"></div>
+                        <div class="col-6"><label class="small text-muted">电话</label><input class="form-control form-control-sm" id="edit-phone"></div>
+                        <div class="col-6"><label class="small text-muted">设备</label><select class="form-select form-select-sm" id="edit-device" onchange="onDeviceChange()">
+                            <option>存取款一体机/ATM</option><option>高速大额存取款机</option><option>回单机/自助终端</option><option>综合版智能柜台</option><option>标准版智能柜台</option><option>网银一体机/LED走字屏</option><option>空调维护</option><option>零星维修</option><option>叫号机/宣传屏</option><option>征信查询机</option><option>安防</option><option>网络设备</option><option>其他</option>
+                        </select></div>
+                        <div class="col-6"><label class="small text-muted">运维商</label><select class="form-select form-select-sm" id="edit-vendor"></select></div>
+                        <div class="col-12"><label class="small text-muted">故障描述</label><input class="form-control form-control-sm" id="edit-desc"></div>
+                    </div>
+                    <button class="btn btn-success btn-sm mt-2" id="confirm-btn" onclick="confirmCreate()">确认生成工单</button>
+                </div>
+            </div>
+            <div class="card" id="success-result" style="display:none;">
+                <div class="card-header bg-success text-white">创建成功</div>
+                <div class="card-body" id="success-content"></div>
+            </div>
+        </div>
+        <div id="page-workorders" style="display:none;">
+            <div class="page-title d-flex align-items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                工单管理
+            </div>
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="row g-2 mb-2 align-items-end">
+                        <div class="col-md-2"><label class="small">时间范围</label>
+                            <select class="form-select form-select-sm" id="filter-date" onchange="renderWorkorders()">
+                                <option value="all">全部时间</option>
+                                <option value="today">今天</option>
+                                <option value="week">本周</option>
+                                <option value="month">本月</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2"><label class="small">供应商</label>
+                            <select class="form-select form-select-sm" id="filter-vendor" onchange="renderWorkorders()">
+                                <option value="all">全部供应商</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2"><label class="small">状态</label>
+                            <select class="form-select form-select-sm" id="filter-status" onchange="renderWorkorders()">
+                                <option value="all">全部状态</option>
+                                <option value="响应中">响应中</option>
+                                <option value="审批中">审批中</option>
+                                <option value="已完成">已完成</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3"><label class="small">搜索机构</label>
+                            <input class="form-control form-control-sm" id="search-order" placeholder="输入机构名称" onkeyup="if(event.keyCode==13)renderWorkorders()">
+                        </div>
+                        <div class="col-md-3"><label class="small">&nbsp;</label>
+<div class="d-flex gap-2">
+                                <button class="btn btn-primary btn-sm flex-grow-1" onclick="renderWorkorders()">查询</button>
+                                <button class="btn btn-secondary btn-sm" onclick="resetFilters()">重置</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="overflow-x:auto">
+                <table class="table table-sm table-hover" id="workorder-table">
+                    <thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>故障</th><th>状态</th><th>运维商</th><th>时间</th><th>操作</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <span class="text-muted small" id="page-info"></span>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">上一页</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">下一页</button>
+                </div>
+            </div>
+        </div>
+        <div id="page-dashboard" style="display:none;">
+            <div class="page-title d-flex align-items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                数据看板
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4"><div class="text-muted small">本月</div><h5 id="month-total">0</h5></div>
+                        <div class="col-4"><div class="text-success small">完成</div><h5 class="text-success" id="month-done">0</h5></div>
+                        <div class="col-4"><div class="text-warning small">未完成</div><h5 class="text-warning clickable-num" id="month-pending" onclick="showPendingDetails()">0</h5></div>
+                        <div class="col-4 mt-2"><div class="text-muted small">本周</div><h5 id="week-total">0</h5></div>
+                        <div class="col-4 mt-2"><div class="text-success small">完成</div><h5 class="text-success" id="week-done">0</h5></div>
+                        <div class="col-4 mt-2"><div class="text-warning small">未完成</div><h5 class="text-warning clickable-num" id="week-pending" onclick="showPendingDetails()">0</h5></div>
+                    </div>
+                    <div class="text-center mt-2 border-top pt-2"><span class="text-muted">平均响应:</span> <strong id="avg-response">0h</strong></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-6 mb-2"><div class="card"><div class="card-body p-2"><h6>供应商工单分布</h6><div class="chart-container"><canvas id="chart-vendor"></canvas></div></div></div></div>
+                <div class="col-12 col-md-6 mb-2"><div class="card"><div class="card-body p-2"><h6>供应商响应时长(小时)</h6><div class="chart-container"><canvas id="chart-response"></canvas></div></div></div></div>
+            </div>
+        </div>
+        <div id="page-vendors" style="display:none;">
+            <div class="page-title d-flex align-items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                运维商
+            </div>
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center"><span>运维商列表</span><button class="btn btn-primary btn-sm" onclick="showVendorModal()">新增</button></div>
+                <table class="table table-sm mb-0" id="vendor-table"><thead><tr><th>设备</th><th>运维商</th><th>联系人</th><th>电话</th><th>操作</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+        <!-- 仓储管理页面 -->
+        <div id="page-warehouse" style="display:none;">
+            <div class="page-title d-flex align-items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                仓储管理
+            </div>
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-warehouse" onclick="showWarehouseTab('warehouse')">仓库管理</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-storage-fee" onclick="showWarehouseTab('storage-fee')">仓储费用</button></li>
+            </ul>
+            <div class="tab-content">
+                <!-- 仓库管理 -->
+                <div class="tab-pane fade show active" id="tab-warehouse">
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>操作</span>
+                            <div>
+                                <button class="btn btn-primary btn-sm me-2" onclick="showWarehouseModal('in')">入库</button>
+                                <button class="btn btn-success btn-sm" onclick="showBatchImportModal()">批量导入</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-3"><label class="small">货物类型</label>
+                                    <select class="form-select form-select-sm" id="wh-filter-type" onchange="renderWarehouse()">
+                                        <option value="">全部类型</option>
+                                        <option value="现金自助设备">现金自助设备</option>
+                                        <option value="自助设备">自助设备</option>
+                                        <option value="大型设备">大型设备</option>
+                                        <option value="其它设备">其它设备</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3"><label class="small">出入库类型</label>
+                                    <select class="form-select form-select-sm" id="wh-filter-io" onchange="renderWarehouse()">
+                                        <option value="">全部</option>
+                                        <option value="入库">入库</option>
+                                        <option value="出库">出库</option>
+                                        <option value="报废">报废</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4"><label class="small">搜索货物名称</label>
+                                    <input class="form-control form-control-sm" id="wh-search" placeholder="输入货物名称" onkeyup="if(event.keyCode==13)renderWarehouse()">
+                                </div>
+                                <div class="col-md-2"><label class="small">&nbsp;</label>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary btn-sm flex-grow-1" onclick="renderWarehouse()">查询</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="resetWarehouseFilters()">重置</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="table table-sm table-hover">
+                            <thead><tr><th>序号</th><th>时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th><th>状态变更</th><th>操作</th></tr></thead>
+                            <tbody id="warehouse-table"></tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="text-muted small" id="wh-page-info"></span>
+                        <div id="wh-pagination"></div>
+                    </div>
+                </div>
+                <!-- 仓储费用 -->
+                <div class="tab-pane fade" id="tab-storage-fee">
+                    <div class="card mb-3">
+                        <div class="card-header">仓储费用统计</div>
+                        <div class="card-body">
+                            <div class="row g-2 mb-2 align-items-end">
+                                <div class="col-md-3"><label class="small">开始月份</label>
+                                    <input type="month" class="form-control form-control-sm" id="sf-month-start">
+                                </div>
+                                <div class="col-md-3"><label class="small">结束月份</label>
+                                    <input type="month" class="form-control form-control-sm" id="sf-month-end">
+                                </div>
+                                <div class="col-md-2"><label class="small">&nbsp;</label>
+                                    <button class="btn btn-primary btn-sm" onclick="calculateStorageFee()">统计</button>
+                                </div>
+                            </div>
+                            <table class="table table-sm table-bordered" id="storage-fee-table">
+                                <thead class="table-light"><tr><th style="text-align:center">年月</th><th>货物类型</th><th>单价(元/月)</th><th>在库数量(台)</th><th>费用(元)</th></tr></thead>
+                                <tbody id="storage-fee-tbody"></tbody>
+                                <tfoot><tr class="table-secondary"><td style="text-align:center" class="fw-bold">合计</td><td colspan="2"></td><td id="sf-total-qty">0</td><td id="sf-total-fee">0</td></tr></tfoot>
+                            </table>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="text-muted small" id="sf-page-info"></span>
+                                <div id="sf-pagination"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="pendingModal"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title">工单明细</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="pending-content"></div>
+</div></div></div>
+
+<!-- 运维商编辑modal -->
+<div class="modal fade" id="vendorModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title" id="vmodal-title">编辑运维商</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <input type="hidden" id="v-index">
+        <div class="mb-2"><label class="small">设备类型</label>
+            <select class="form-select form-select-sm" id="v-type">
+                <option>存取款一体机/ATM</option><option>高速大额存取款机</option><option>回单机/自助终端</option><option>综合版智能柜台</option><option>标准版智能柜台</option><option>网银一体机/LED走字屏</option><option>空调维护</option><option>零星维修</option><option>叫号机/宣传屏</option><option>征信查询机</option><option>安防</option><option>网络设备</option><option>其他</option>
+            </select>
+        </div>
+        <div class="mb-2"><label class="small">运维商</label><input type="text" class="form-control form-control-sm" id="v-vendor"></div>
+        <div class="mb-2"><label class="small">联系人</label><input type="text" class="form-control form-control-sm" id="v-contact"></div>
+        <div class="mb-2"><label class="small">电话</label><input type="text" class="form-control form-control-sm" id="v-phone"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveVendor()">保存</button></div>
+</div></div></div>
+
+<!-- 仓储操作modal -->
+<div class="modal fade" id="warehouseModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title" id="wh-modal-title">入库</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"> 
+        <div class="mb-2"><label class="small">货物类型</label>
+            <select class="form-select form-select-sm" id="wh-type" onchange="updateWhNameOptions()">
+                <option value="现金自助设备">现金自助设备</option>
+                <option value="自助设备">自助设备</option>
+                <option value="大型设备">大型设备</option>
+                <option value="其它设备">其它设备</option>
+            </select>
+        </div>
+        <div class="mb-2"><label class="small">货物名称</label>
+            <select class="form-select form-select-sm" id="wh-name">
+                <option value="">请先选择货物类型</option>
+            </select>
+        </div>
+        <div class="mb-2"><label class="small">数量</label><input type="number" class="form-control form-control-sm" id="wh-qty" value="1" min="1"></div>
+        <div class="mb-2"><label class="small">时间</label><input type="date" class="form-control form-control-sm" id="wh-date"></div>
+        <div class="mb-2"><label class="small">备注</label><textarea class="form-control form-control-sm" id="wh-remark" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveWarehouseOp()">保存</button></div>
+</div></div></div>
+
+<!-- 批量导入modal -->
+<div class="modal fade" id="batchImportModal"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title">批量导入</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label class="small">选择Excel文件</label>
+            <input type="file" class="form-control form-control-sm" id="batch-file" accept=".xlsx,.xls" onchange="handleBatchFile(this)">
+        </div>
+        <div class="mb-2">
+            <a href="javascript:void(0)" class="btn btn-link btn-sm p-0" onclick="downloadBatchTemplate()">下载批量导入模板</a>
+            <span class="text-muted small ms-2">（模板格式：序号、出入库类型、出入库时间、货物名称、货物类型、数量、备注）</span>
+        </div>
+        <div id="batch-preview" class="mt-2" style="max-height:300px;overflow-y:auto;"></div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+        <button class="btn btn-primary btn-sm" id="batch-import-btn" onclick="confirmBatchImport()" disabled>确认导入</button>
+    </div>
+</div></div></div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const STORAGE_KEY = 'workorders_local2';
+let workorders = [];
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let chartVendor = null, chartResponse = null;
+
+// 设备-供应商映射表
+const deviceVendorMap = {
+    '存取款一体机/ATM': '广东奔腾达电子有限公司',
+    '高速大额存取款机': '广东奔腾达电子有限公司',
+    '回单机/自助终端': '广州南天电脑系统有限公司',
+    '综合版智能柜台': '广西百鼎科技有限责任公司',
+    '标准版智能柜台': '广东奔腾达电子有限公司',
+    '网银一体机/LED走字屏': '广西佳仕运网络科技有限公司',
+    '空调维护': '广西南宁市源申隆贸易有限公司',
+    '零星维修': '广西三弦建设工程有限公司',
+    '叫号机/宣传屏': '桂林宇峰电子科技有限公司',
+    '征信查询机': '北京信立合创信息技术有限公司',
+    '安防': '其他',
+    '网络设备': '其他',
+    '其他': '其他'
+};
+
+const vendors = [
+    {type:'存取款一体机/ATM',vendor:'广东奔腾达电子有限公司',contact:'周洪商/韩东',phone:'18176252256'},
+    {type:'高速大额存取款机',vendor:'广东奔腾达电子有限公司',contact:'韩东',phone:'18178601382'},
+    {type:'回单机/自助终端',vendor:'广州南天电脑系统有限公司',contact:'梁太鑫',phone:'13877130518'},
+    {type:'综合版智能柜台',vendor:'广西百鼎科技有限责任公司',contact:'莫德文',phone:'18278387986'},
+    {type:'标准版智能柜台',vendor:'广东奔腾达电子有限公司',contact:'肖俊宏',phone:'13878748626'},
+    {type:'网银一体机/LED走字屏',vendor:'广西佳仕运网络科技有限公司',contact:'陈剑峰',phone:'13977300180'},
+    {type:'空调维护',vendor:'广西南宁市源申隆贸易有限公司',contact:'陈国文',phone:'19077164249'},
+    {type:'零星维修',vendor:'广西三弦建设工程有限公司',contact:'曾海龙',phone:'13407718924'},
+    {type:'叫号机/宣传屏',vendor:'桂林宇峰电子科技有限公司',contact:'唐孝红',phone:'18178357885'},
+    {type:'征信查询机',vendor:'北京信立合创信息技术有限公司',contact:'谭因金',phone:'13878372640'},
+    {type:'安防',vendor:'其他',contact:'',phone:''},
+    {type:'网络设备',vendor:'其他',contact:'',phone:''},
+    {type:'其他',vendor:'其他',contact:'',phone:''}
+];
+
+// ==================== 仓储管理配置 ====================
+// 货物名称与类型映射（根据附件1整理）
+const WH_NAME_MAP = {
+    '现金自助设备': ['OKI存取款机', 'OKI大堂ATM', '奔腾达零钞机', '大额存取款机', '东信取款机', '广电ATM', '日立存取款机'],
+    '自助设备': ['VR一体机', '壁挂式燃气机', '穿墙式燃气机', '存折机', '发卡机', '回单机', '火车售票机', '立式燃气机', '立式网银机', '照片机', '智能柜台'],
+    '大型设备': ['空调外机', '其他'],
+    '其它设备': ['壁挂式空调', '其他']
+};
+
+// 货物类型单价配置（元/月）
+const WH_PRICE_MAP = {
+    '现金自助设备': 45,
+    '自助设备': 20,
+    '大型设备': 45,
+    '其它设备': 20
+};
+
+// 有效货物类型
+const VALID_CATEGORIES = Object.keys(WH_PRICE_MAP);
+
+// ==================== 仓储管理变量 ====================
+const WH_STORAGE = 'warehouse_records';
+let whRecords = [];
+let whCurrentPage = 1;
+const WH_PAGE_SIZE = 15;
+let whCurrentOp = 'in';
+let batchImportData = [];
+let sfCurrentPage = 1;
+const SF_PAGE_SIZE = 12;
+let sfAllResults = [];
+
+function init() {
+    loadWorkorders();
+    loadVendors();
+    updateVendorFilter();
+    renderWorkorders();
+    renderDashboard();
+    renderVendors();
+    loadWarehouseRecords();
+    setInterval(function() {
+        saveWorkorders();
+        saveWarehouseRecords();
+        console.log('数据已自动保存: ' + new Date().toLocaleString());
+    }, 30 * 60 * 1000);
+}
+
+function loadWorkorders() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        try { workorders = JSON.parse(saved); }
+        catch(e) { workorders = []; }
+    } else { workorders = []; }
+}
+
+function saveWorkorders() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(workorders));
+}
+
+function getVendorNames() {
+    return [...new Set(vendors.map(function(v) { return v.vendor; }))].filter(function(n) { return n !== '其他'; });
+}
+
+function updateVendorFilter() {
+    const sel = document.getElementById('filter-vendor');
+    var html = '<option value="all">全部供应商</option>';
+    getVendorNames().forEach(function(v) {
+        html += '<option value="'+v+'">'+v+'</option>';
+    });
+    sel.innerHTML = html;
+}
+
+function generateOrderNo() {
+    var n = new Date();
+    return 'WO' + n.getFullYear() + String(n.getMonth()+1).padStart(2,'0') + String(n.getDate()).padStart(2,'0') + String(n.getHours()).padStart(2,'0') + String(n.getMinutes()).padStart(2,'0') + String(n.getSeconds()).slice(-2);
+}
+
+function onDeviceChange() {
+    var d = document.getElementById('edit-device').value;
+    var s = document.getElementById('edit-vendor');
+    if (d === '其他' || d === '网络设备') {
+        s.innerHTML = '<option value="其他">其他</option>';
+    } else {
+        var vendor = deviceVendorMap[d] || '其他';
+        s.innerHTML = '<option value="'+vendor+'">'+vendor+'</option>';
+    }
+}
+
+function detectDevice(text) {
+    var t = text.toUpperCase();
+    if (t.indexOf('ATM') >= 0 || t.indexOf('取款机') >= 0 || t.indexOf('存取款') >= 0) return '存取款一体机/ATM';
+    if (t.indexOf('高速') >= 0 && t.indexOf('大额') >= 0) return '高速大额存取款机';
+    if (t.indexOf('回单') >= 0 || t.indexOf('自助终端') >= 0) return '回单机/自助终端';
+    if (t.indexOf('综合版') >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '综合版智能柜台';
+    if (t.indexOf('标准版') >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '标准版智能柜台';
+    if (t.indexOf('LED') >= 0 || t.indexOf('走字屏') >= 0 || t.indexOf('显示屏') >= 0) return '网银一体机/LED走字屏';
+    if (t.indexOf('空调') >= 0) return '空调维护';
+    if (t.indexOf('叫号') >= 0 || t.indexOf('宣传屏') >= 0 || t.indexOf('排队机') >= 0) return '叫号机/宣传屏';
+    if (t.indexOf('征信') >= 0 || t.indexOf('查询机') >= 0) return '征信查询机';
+    if ((t.indexOf('安防') >= 0 || t.indexOf('监控') >= 0 || t.indexOf('摄像头') >= 0) && t.indexOf('锁') < 0 && t.indexOf('门') < 0) return '安防';
+    if ((t.indexOf('网络') >= 0 || t.indexOf('路由器') >= 0 || t.indexOf('交换机') >= 0 || t.indexOf('网线') >= 0 || t.indexOf('电脑') >= 0 || t.indexOf('电话') >= 0 || t.indexOf('计算机') >= 0 || t.indexOf('笔记本') >= 0 || t.indexOf('PC') >= 0 || t.indexOf('服务器') >= 0 || t.indexOf('打印机') >= 0 || t.indexOf('WIFI') >= 0 || t.indexOf('WI-FI') >= 0 || t.indexOf('键盘') >= 0 || t.indexOf('死机') >= 0) && t.indexOf('锁') < 0 && t.indexOf('门') < 0) return '网络设备';
+    if (t.indexOf('零星') >= 0 || t.indexOf('锁') >= 0 || t.indexOf('门') >= 0 || t.indexOf('墙面') >= 0 || t.indexOf('水电') >= 0 || t.indexOf('灯具') >= 0 || t.indexOf('桌椅') >= 0 || t.indexOf('上锁') >= 0 || t.indexOf('开锁') >= 0 || t.indexOf('门禁') >= 0 || t.indexOf('电子锁') >= 0 || (t.indexOf('维修') >= 0 && t.indexOf('网络') < 0 && t.indexOf('电话') < 0 && t.indexOf('电脑') < 0 && t.indexOf('笔记本') < 0 && t.indexOf('空调') < 0 && t.indexOf('键盘') < 0)) return '零星维修';
+    return '其他';
+}
+
+function analyzeWorkorder() {
+    var i = document.getElementById('ai-input').value;
+    if (!i.trim()) { alert('请输入工单信息'); return; }
+    var dept='', person='', phone='', device='其他', desc='';
+    var dm = i.match(/报修部门[：:]\s*(.+?)(?:\n|$)/);
+    if (dm) dept = dm[1].trim();
+    if (!dept) { var dm2 = i.match(/机构[：:]\s*(.+?)(?:\n|$)/); if (dm2) dept = dm2[1].trim(); }
+    var pm = i.match(/报修人[及和]*联系电话?[：:]?\s*(.+?)(?:\n|$)/);
+    if (pm) {
+        var pp = pm[1].trim();
+        var ppClean = pp.replace(/\s+/g, '');
+        var m = ppClean.match(/(\d{11})/);
+        if (m) { phone = m[1]; person = pp.replace(/\s+/g, '').replace(/\d{11}/, '').replace(/[，。、:：()（）【】]/g, '').trim(); }
+        else { person = pp; }
+    }
+    if (!phone) { var allText = i.replace(/\s+/g, ''); var m2 = allText.match(/(\d{11})/); if (m2) phone = m2[1]; }
+    var d2 = i.match(/具体报修项目[：:]\s*(.+?)(?:\n|$)/);
+    if (d2) desc = d2[1].trim();
+    if (!desc) { var d3 = i.match(/故障描述[：:]\s*(.+?)(?:\n|$)/); if (d3) desc = d3[1].trim(); }
+    if (!desc) { var d4 = i.match(/故障[：:]\s*(.+?)(?:\n|$)/i); if (d4) desc = d4[1].trim(); }
+    if (!desc) { var lines = i.split('\n'); for (var j = lines.length - 1; j >= 0; j--) { var line = lines[j].trim(); if (line && !line.match(/^[报修机构人电话]/) && line.length > 5) { desc = line.replace(/^[^：:]+[：:]\s*/, '').trim(); break; } } }
+    device = detectDevice(i);
+    document.getElementById('edit-dept').value = dept || '';
+    document.getElementById('edit-person').value = person || '';
+    document.getElementById('edit-phone').value = phone || '';
+    document.getElementById('edit-device').value = device;
+    document.getElementById('edit-desc').value = desc || '';
+    onDeviceChange();
+    document.getElementById('analysis-result').style.display = 'block';
+    document.getElementById('success-result').style.display = 'none';
+}
+
+function confirmCreate() {
+    var btn = document.getElementById('confirm-btn');
+    btn.disabled = true;
+    btn.textContent = '创建中...';
+    setTimeout(function() {
+        var order = {
+            id: generateOrderNo(),
+            dept: document.getElementById('edit-dept').value,
+            person: document.getElementById('edit-person').value,
+            phone: document.getElementById('edit-phone').value,
+            device: document.getElementById('edit-device').value,
+            description: document.getElementById('edit-desc').value,
+            vendor: document.getElementById('edit-vendor').value,
+            status: '响应中',
+            create_time: new Date().toISOString(),
+            complete_time: null
+        };
+        workorders.unshift(order);
+        saveWorkorders();
+        updateVendorFilter();
+        renderWorkorders();
+        renderDashboard();
+        document.getElementById('analysis-result').style.display = 'none';
+        document.getElementById('ai-input').value = '';
+        document.getElementById('success-content').innerHTML = '<p>工单号：<strong>'+order.id+'</strong></p><p>机构：'+order.dept+'</p><p>设备：'+order.device+'</p><p>运维商：'+order.vendor+'</p><p>状态：'+order.status+'</p>';
+        document.getElementById('success-result').style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '确认生成工单';
+    }, 300);
+}
+
+function deleteWorkorder(id) {
+    if (!confirm('确定删除此工单?')) return;
+    workorders = workorders.filter(function(o) { return o.id !== id; });
+    saveWorkorders();
+    renderWorkorders();
+    renderDashboard();
+}
+
+function getFilteredOrders() {
+    var filtered = workorders.slice();
+    var dateFilter = document.getElementById('filter-date').value;
+    var now = new Date();
+    if (dateFilter === 'today') { var today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); filtered = filtered.filter(function(o) { return new Date(o.create_time) >= today; }); }
+    else if (dateFilter === 'week') { var weekAgo = new Date(now.getTime() - 7 * 86400000); filtered = filtered.filter(function(o) { return new Date(o.create_time) >= weekAgo; }); }
+    else if (dateFilter === 'month') { var monthStart = new Date(now.getFullYear(), now.getMonth(), 1); filtered = filtered.filter(function(o) { return new Date(o.create_time) >= monthStart; }); }
+    var vendorFilter = document.getElementById('filter-vendor').value;
+    if (vendorFilter !== 'all') filtered = filtered.filter(function(o) { return o.vendor === vendorFilter; });
+    var statusFilter = document.getElementById('filter-status').value;
+    if (statusFilter !== 'all') filtered = filtered.filter(function(o) { return o.status === statusFilter; });
+    var search = document.getElementById('search-order').value.toLowerCase();
+    if (search) filtered = filtered.filter(function(o) { return (o.dept || '').toLowerCase().includes(search); });
+    return filtered;
+}
+
+function resetFilters() {
+    document.getElementById('filter-date').value = 'all';
+    document.getElementById('filter-vendor').value = 'all';
+    document.getElementById('filter-status').value = 'all';
+    document.getElementById('search-order').value = '';
+    currentPage = 1;
+    renderWorkorders();
+}
+
+function renderWorkorders() {
+    var filtered = getFilteredOrders();
+    var totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    var start = (currentPage - 1) * PAGE_SIZE;
+    var pageData = filtered.slice(start, start + PAGE_SIZE);
+    var html = '';
+    pageData.forEach(function(o) {
+        var ct = new Date(o.create_time);
+        var desc = (o.description || '').substring(0, 20);
+        var statusColor = o.status === '响应中' ? '#007bff' : o.status === '审批中' ? '#6f42c1' : '#28a745';
+        html += '<tr><td style="font-size:12px">'+o.id+'</td><td style="font-size:12px">'+(o.dept||'')+'</td><td style="font-size:12px">'+(o.device||'')+'</td><td style="font-size:12px" title="'+(o.description||'')+'">'+desc+'</td><td><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px">'+(o.vendor||'-')+'</td><td style="font-size:12px">'+ct.toLocaleDateString()+'</td><td><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
+    });
+    document.querySelector('#workorder-table tbody').innerHTML = html;
+    document.getElementById('page-info').textContent = '共' + filtered.length + '条 第' + currentPage + '/' + totalPages + '页';
+}
+
+function updateStatus(id, status) {
+    var order = workorders.find(function(o) { return o.id === id; });
+    if (order) { order.status = status; if (status === '已完成') order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); renderDashboard(); }
+}
+
+function changePage(delta) {
+    var filtered = getFilteredOrders();
+    var totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+    currentPage = Math.max(1, Math.min(totalPages, currentPage + delta));
+    renderWorkorders();
+}
+
+function showPendingDetails() {
+    var pending = workorders.filter(function(o) { return o.status !== '已完成'; });
+    var now = new Date();
+    pending.sort(function(a, b) { return (now - new Date(a.create_time)) - (now - new Date(b.create_time)); });
+    var html = '';
+    if (pending.length > 0) {
+        html = '<table class="table table-sm"><thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>故障描述</th><th>创建时间</th><th>时长</th></tr></thead><tbody>';
+        pending.forEach(function(o) {
+            var days = Math.floor((now - new Date(o.create_time)) / 86400000);
+            var hours = Math.floor(((now - new Date(o.create_time)) % 86400000) / 3600000);
+            var duration = days > 0 ? days + '天' + hours + '小时' : hours + '小时';
+            html += '<tr><td>'+o.id+'</td><td>'+o.dept+'</td><td>'+o.device+'</td><td title="'+(o.description||'')+'">'+(o.description||'').substring(0,20)+'</td><td>'+new Date(o.create_time).toLocaleString()+'</td><td><strong>'+duration+'</strong></td></tr>';
+        });
+        html += '</tbody></table>';
+    } else { html = '<p class="text-center text-muted">暂无未完成工单</p>'; }
+    document.getElementById('pending-content').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('pendingModal')).show();
+}
+
+function renderDashboard() {
+    var now = new Date();
+    var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    var weekAgo = new Date(now.getTime() - 7 * 86400000);
+    var mo = workorders.filter(function(o) { return new Date(o.create_time) >= monthStart; });
+    var wo = workorders.filter(function(o) { return new Date(o.create_time) >= weekAgo; });
+    document.getElementById('month-total').textContent = mo.length;
+    document.getElementById('month-done').textContent = mo.filter(function(o) { return o.status === '已完成'; }).length;
+    document.getElementById('month-pending').textContent = mo.filter(function(o) { return o.status !== '已完成'; }).length;
+    document.getElementById('week-total').textContent = wo.length;
+    document.getElementById('week-done').textContent = wo.filter(function(o) { return o.status === '已完成'; }).length;
+    document.getElementById('week-pending').textContent = wo.filter(function(o) { return o.status !== '已完成'; }).length;
+    var done = workorders.filter(function(o) { return o.status === '已完成' && o.complete_time; });
+    if (done.length > 0) {
+        var total = 0;
+        done.forEach(function(o) { total += new Date(o.complete_time).getTime() - new Date(o.create_time).getTime(); });
+        var avg = total / done.length;
+        var h = Math.floor(avg / 3600000);
+        var m = Math.floor((avg % 3600000) / 60000);
+        document.getElementById('avg-response').textContent = h + 'h' + m + 'm';
+    } else { document.getElementById('avg-response').textContent = '0h'; }
+    var vm = {};
+    workorders.forEach(function(o) { var v = o.vendor || '未知'; vm[v] = (vm[v] || 0) + 1; });
+    if (window.chartVendor) window.chartVendor.destroy();
+    window.chartVendor = new Chart(document.getElementById('chart-vendor').getContext('2d'), { type: 'bar', data: { labels: Object.keys(vm), datasets: [{ data: Object.values(vm), backgroundColor: '#1976d2' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: {beginAtZero: true } } } });
+    var rm = {};
+    done.forEach(function(o) { var v = o.vendor || '未知'; var h = (new Date(o.complete_time).getTime() - new Date(o.create_time).getTime()) / 3600000; if (!rm[v]) rm[v] = []; rm[v].push(h); });
+    var avgResponse = Object.keys(rm).map(function(v) { return { vendor: v, avg: rm[v].reduce(function(a, b) { return a + b; }, 0) / rm[v].length }; }).sort(function(a, b) { return b.avg - a.avg; });
+    if (window.chartResponse) window.chartResponse.destroy();
+    if (avgResponse.length > 0) { window.chartResponse = new Chart(document.getElementById('chart-response').getContext('2d'), { type: 'bar', data: { labels: avgResponse.map(function(x) { return x.vendor.substring(0, 8); }), datasets: [{ data: avgResponse.map(function(x) { return Math.round(x.avg * 10) / 10; }), backgroundColor: '#28a745' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }, indexAxis: 'y' } }); }
+}
+
+function renderVendors() {
+    var html = '';
+    vendors.forEach(function(v, idx) { html += '<tr><td>'+v.type+'</td><td>'+v.vendor+'</td><td>'+v.contact+'</td><td>'+v.phone+'</td><td><button class="btn btn-link btn-sm p-0" onclick="editVendor('+idx+')">编辑</button></td></tr>'; });
+    document.querySelector('#vendor-table tbody').innerHTML = html;
+}
+
+function showVendorModal(idx) {
+    var modal = document.getElementById('vendorModal');
+    if (idx !== undefined) {
+        document.getElementById('vmodal-title').textContent = '编辑运维商';
+        document.getElementById('v-index').value = idx;
+        document.getElementById('v-type').value = vendors[idx].type;
+        document.getElementById('v-vendor').value = vendors[idx].vendor;
+        document.getElementById('v-contact').value = vendors[idx].contact;
+        document.getElementById('v-phone').value = vendors[idx].phone;
+    } else {
+        document.getElementById('vmodal-title').textContent = '新增运维商';
+        document.getElementById('v-index').value = '';
+        document.getElementById('v-type').value = '存取款一体机/ATM';
+        document.getElementById('v-vendor').value = '';
+        document.getElementById('v-contact').value = '';
+        document.getElementById('v-phone').value = '';
+    }
+    new bootstrap.Modal(modal).show();
+}
+
+function editVendor(idx) { showVendorModal(idx); }
+
+function saveVendor() {
+    var idx = document.getElementById('v-index').value;
+    var type = document.getElementById('v-type').value;
+    var vendor = document.getElementById('v-vendor').value.trim();
+    var contact = document.getElementById('v-contact').value.trim();
+    var phone = document.getElementById('v-phone').value.trim();
+    if (!vendor) { alert('请输入运维商名称'); return; }
+    if (idx !== '') {
+        vendors[idx] = {type: type, vendor: vendor, contact: contact, phone: phone};
+        deviceVendorMap[type] = vendor;
+    } else {
+        vendors.push({type: type, vendor: vendor, contact: contact, phone: phone});
+        deviceVendorMap[type] = vendor;
+    }
+    saveVendors();
+    bootstrap.Modal.getInstance(document.getElementById('vendorModal')).hide();
+    renderVendors();
+    updateVendorFilter();
+}
+
+function saveVendors() {
+    localStorage.setItem('vendors_local', JSON.stringify(vendors));
+    localStorage.setItem('deviceVendorMap_local', JSON.stringify(deviceVendorMap));
+}
+
+function loadVendors() {
+    var saved = localStorage.getItem('vendors_local');
+    if (saved) {
+        try { 
+            vendors = JSON.parse(saved);
+            var savedMap = localStorage.getItem('deviceVendorMap_local');
+            if (savedMap) {
+                try { Object.assign(deviceVendorMap, JSON.parse(savedMap)); } catch(e) {}
+            }
+        } catch(e) {}
+    }
+}
+
+function showPage(page) {
+    ['generate', 'workorders', 'dashboard', 'vendors', 'warehouse'].forEach(function(p) { document.getElementById('page-' + p).style.display = 'none'; document.getElementById('nav-' + p).classList.remove('active'); });
+    document.getElementById('page-' + page).style.display = 'block';
+    document.getElementById('nav-' + page).classList.add('active');
+    if (page === 'workorders') renderWorkorders();
+    else if (page === 'dashboard') renderDashboard();
+    else if (page === 'vendors') renderVendors();
+    else if (page === 'warehouse') { renderWarehouse(); }
+}
+
+// ==================== 仓储管理 JS ====================
+function loadWarehouseRecords() {
+    var data = localStorage.getItem(WH_STORAGE);
+    whRecords = data ? JSON.parse(data) : [];
+}
+
+function saveWarehouseRecords() {
+    localStorage.setItem(WH_STORAGE, JSON.stringify(whRecords));
+}
+
+function updateWhNameOptions() {
+    var type = document.getElementById('wh-type').value;
+    var sel = document.getElementById('wh-name');
+    var names = WH_NAME_MAP[type] || [];
+    var html = '<option value="">-- 请选择 --</option>';
+    names.forEach(function(n) { html += '<option value="'+n+'">'+n+'</option>'; });
+    sel.innerHTML = html;
+}
+
+function showWarehouseModal(op) {
+    whCurrentOp = op;
+    document.getElementById('wh-modal-title').textContent = '入库';
+    document.getElementById('wh-type').value = '现金自助设备';
+    updateWhNameOptions();
+    document.getElementById('wh-qty').value = '1';
+    document.getElementById('wh-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('wh-remark').value = '';
+    new bootstrap.Modal(document.getElementById('warehouseModal')).show();
+}
+
+function saveWarehouseOp() {
+    var name = document.getElementById('wh-name').value.trim();
+    if (!name) { alert('请选择货物名称'); return; }
+    var type = document.getElementById('wh-type').value;
+    var qty = parseInt(document.getElementById('wh-qty').value) || 1;
+    var date = document.getElementById('wh-date').value;
+    var remark = document.getElementById('wh-remark').value.trim();
+    var record = { id: Date.now(), type: '入库', name: name, category: type, qty: qty, date: date, remark: remark };
+    whRecords.unshift(record);
+    saveWarehouseRecords();
+    bootstrap.Modal.getInstance(document.getElementById('warehouseModal')).hide();
+    renderWarehouse();
+}
+
+function updateWhStatus(id, newType) {
+    var record = whRecords.find(function(r) { return r.id === id; });
+    if (record) {
+        record.type = newType;
+        record.date = new Date().toISOString().split('T')[0];
+        saveWarehouseRecords();
+        renderWarehouse();
+    }
+}
+
+function deleteWhRecord(id) {
+    if (!confirm('确定删除此记录？')) return;
+    whRecords = whRecords.filter(function(r) { return r.id !== id; });
+    saveWarehouseRecords();
+    renderWarehouse();
+}
+
+function renderWarehouse() {
+    var typeFilter = document.getElementById('wh-filter-type').value;
+    var ioFilter = document.getElementById('wh-filter-io').value;
+    var search = document.getElementById('wh-search').value.trim().toLowerCase();
+    var filtered = whRecords.filter(function(r) {
+        if (typeFilter && r.category !== typeFilter) return false;
+        if (ioFilter && r.type !== ioFilter) return false;
+        if (search && r.name.toLowerCase().indexOf(search) < 0) return false;
+        return true;
+    });
+    var totalPages = Math.ceil(filtered.length / WH_PAGE_SIZE) || 1;
+    if (whCurrentPage > totalPages) whCurrentPage = totalPages;
+    var start = (whCurrentPage - 1) * WH_PAGE_SIZE;
+    var pageData = filtered.slice(start, start + WH_PAGE_SIZE);
+    var typeColors = { '现金自助设备': 'bg-primary', '自助设备': 'bg-success', '大型设备': 'bg-warning', '其它设备': 'bg-secondary' };
+    var typeLabels = { '入库': {'bg': 'bg-primary'}, '出库': {'bg': 'bg-warning'}, '报废': {'bg': 'bg-danger'} };
+    var html = '';
+    pageData.forEach(function(r, i) {
+        var seq = start + i + 1;
+        html += '<tr>'+
+            '<td>'+seq+'</td>'+
+            '<td>'+r.date+'</td>'+
+            '<td>'+r.name+'</td>'+
+            '<td><span class="badge '+typeColors[r.category]+'">'+r.category+'</span></td>'+
+            '<td>'+r.qty+'</td>'+
+            '<td>'+(r.remark||'')+'</td>'+
+            '<td><select class="status-select" onchange="updateWhStatus('+r.id+', this.value)"><option value="入库"'+(r.type==='入库'?' selected':'')+'>入库</option><option value="出库"'+(r.type==='出库'?' selected':'')+'>出库</option><option value="报废"'+(r.type==='报废'?' selected':'')+'>报废</option></select></td>'+
+            '<td><button class="btn btn-link btn-sm text-danger p-0" onclick="deleteWhRecord('+r.id+')">删除</button></td>'+
+            '</tr>';
+    });
+    if (!html) html = '<tr><td colspan="8" class="text-center text-muted">暂无记录</td></tr>';
+    document.getElementById('warehouse-table').innerHTML = html;
+    document.getElementById('wh-page-info').textContent = '共 '+filtered.length+' 条，第 '+whCurrentPage+'/'+totalPages+' 页';
+    var pgHtml = '';
+    if (totalPages > 1) {
+        pgHtml = '<button class="btn btn-sm btn-outline-secondary me-1"'+(whCurrentPage>1?' onclick="whCurrentPage--;renderWarehouse()"':' disabled')+'>上一页</button>';
+        pgHtml += '<button class="btn btn-sm btn-outline-secondary"'+(whCurrentPage<totalPages?' onclick="whCurrentPage++;renderWarehouse()"':' disabled')+'>下一页</button>';
+    }
+    document.getElementById('wh-pagination').innerHTML = pgHtml;
+}
+
+function resetWarehouseFilters() {
+    document.getElementById('wh-filter-type').value = '';
+    document.getElementById('wh-filter-io').value = '';
+    document.getElementById('wh-search').value = '';
+    whCurrentPage = 1;
+    renderWarehouse();
+}
+
+function showWarehouseTab(tab) {
+    // 取消自动调用，用户手动点击统计按钮
+}
+
+// 仓储费用计算 - 支持多月份
+function calculateStorageFee() {
+    var startMonth = document.getElementById('sf-month-start').value;
+    var endMonth = document.getElementById('sf-month-end').value;
+    if (!startMonth || !endMonth) { alert('请选择开始和结束月份'); return; }
+    var startParts = startMonth.split('-');
+    var endParts = endMonth.split('-');
+    var startYear = parseInt(startParts[0]);
+    var startMon = parseInt(startParts[1]);
+    var endYear = parseInt(endParts[0]);
+    var endMon = parseInt(endParts[1]);
+    if (startYear > endYear || (startYear === endYear && startMon > endMon)) { alert('开始月份不能晚于结束月份'); return; }
+    
+    // 生成月份列表
+    var months = [];
+    var y = startYear, m = startMon;
+    while (y < endYear || (y === endYear && m <= endMon)) {
+        months.push({ year: y, month: m });
+        m++;
+        if (m > 12) { m = 1; y++; }
+    }
+    
+    sfAllResults = [];
+    var cutOffDay = 16;
+    var categories = ['现金自助设备', '自助设备', '大型设备', '其它设备'];
+    
+    months.forEach(function(target) {
+        var targetYear = target.year;
+        var targetMonth = target.month;
+        var targetStart = new Date(targetYear, targetMonth - 1, 1);
+        var targetEnd = new Date(targetYear, targetMonth, 0); // 月末
+        
+        categories.forEach(function(cat) {
+            var price = WH_PRICE_MAP[cat];
+            var count = 0;
+            
+            // 遍历所有入库记录，找在库物品
+            whRecords.forEach(function(r) {
+                if (r.category !== cat) return;
+                
+                // 找入库记录
+                var inRec = null;
+                if (r.type === '入库') {
+                    inRec = r;
+                } else if (r.type === '出库' || r.type === '报废') {
+                    // 查找对应的入库记录
+                    inRec = whRecords.find(function(x) {
+                        return x.type === '入库' && x.name === r.name && x.category === cat && new Date(x.date) <= new Date(r.date);
+                    });
+                }
+                
+                if (!inRec) return;
+                
+                var inDate = new Date(inRec.date);
+                var inYear = inDate.getFullYear();
+                var inMonth = inDate.getMonth() + 1;
+                var inDay = inDate.getDate();
+                
+                // 判断该入库物品是否需要计费
+                // 规则：16日及之前入库，当月计费；16日之后入库，当月不计费
+                var shouldCharge = false;
+                if (inYear < targetYear || (inYear === targetYear && inMonth < targetMonth)) {
+                    // 之前月份入库，检查是否在目标月份之前已出库
+                    var outDate = null;
+                    if (r.type === '出库' || r.type === '报废') {
+                        outDate = new Date(r.date);
+                    } else {
+                        // 找对应的出库记录
+                        var outRec = whRecords.find(function(x) {
+                            return (x.type === '出库' || x.type === '报废') && x.name === r.name && x.category === cat && new Date(x.date) > inDate;
+                        });
+                        if (outRec) outDate = new Date(outRec.date);
+                    }
+                    
+                    if (!outDate || outDate > targetEnd) {
+                        // 在目标月份仍在库
+                        shouldCharge = true;
+                    }
+                } else if (inYear === targetYear && inMonth === targetMonth) {
+                    // 当月入库，16日及之前计费，16日之后不计费
+                    if (inDay <= cutOffDay) {
+                        // 检查当月是否出库
+                        var outRec = whRecords.find(function(x) {
+                            return (x.type === '出库' || x.type === '报废') && x.name === r.name && x.category === cat;
+                        });
+                        var outDate = outRec ? new Date(outRec.date) : null;
+                        if (!outDate || outDate > targetEnd) {
+                            shouldCharge = true;
+                        }
+                    }
+                }
+                
+                if (shouldCharge) {
+                    count += inRec.qty;
+                }
+            });
+            
+            var fee = count * price;
+            sfAllResults.push({ year: targetYear, month: targetMonth, cat: cat, price: price, qty: count, fee: fee });
+        });
+    });
+    
+    renderStorageFeePage();
+}
+
+function renderStorageFeePage() {
+    var totalPages = Math.ceil(sfAllResults.length / SF_PAGE_SIZE) || 1;
+    if (sfCurrentPage > totalPages) sfCurrentPage = totalPages;
+    var start = (sfCurrentPage - 1) * SF_PAGE_SIZE;
+    var pageData = sfAllResults.slice(start, start + SF_PAGE_SIZE);
+    var html = '';
+    var lastYearMonth = '';
+    pageData.forEach(function(r) {
+        var yearMonth = r.year + '年' + r.month + '月';
+        var rowspan = '';
+        if (yearMonth !== lastYearMonth) {
+            // 计算该月份有幾條記錄
+            var sameMonthCount = pageData.filter(function(x) { return x.year === r.year && x.month === r.month; }).length;
+            rowspan = ' rowspan="' + sameMonthCount + '"';
+            lastYearMonth = yearMonth;
+        } else {
+            rowspan = ''; // 不渲染年月列
+        }
+        html += '<tr>' + (rowspan ? '<td' + rowspan + ' style="text-align:center;vertical-align:middle">' + yearMonth + '</td>' : '') + '<td>'+r.cat+'</td><td>'+r.price+'</td><td>'+r.qty+'</td><td>'+r.fee+'</td></tr>';
+    });
+    document.getElementById('storage-fee-tbody').innerHTML = html;
+    var totalQty = 0, totalFee = 0;
+    sfAllResults.forEach(function(r) { totalQty += r.qty; totalFee += r.fee; });
+    document.getElementById('sf-total-qty').textContent = totalQty;
+    document.getElementById('sf-total-fee').textContent = totalFee;
+    document.getElementById('sf-page-info').textContent = '共 '+sfAllResults.length+' 条，第 '+sfCurrentPage+'/'+totalPages+' 页';
+    var pgHtml = '';
+    if (totalPages > 1) {
+        pgHtml = '<button class="btn btn-sm btn-outline-secondary me-1"'+(sfCurrentPage>1?' onclick="sfCurrentPage--;renderStorageFeePage()"':' disabled')+'>上一页</button>';
+        pgHtml += '<button class="btn btn-sm btn-outline-secondary"'+(sfCurrentPage<totalPages?' onclick="sfCurrentPage++;renderStorageFeePage()"':' disabled')+'>下一页</button>';
+    }
+    document.getElementById('sf-pagination').innerHTML = pgHtml;
+}
+
+// 批量导入功能
+function showBatchImportModal() {
+    batchImportData = [];
+    document.getElementById('batch-file').value = '';
+    document.getElementById('batch-preview').innerHTML = '<p class="text-muted text-center">请选择Excel文件</p>';
+    document.getElementById('batch-import-btn').disabled = true;
+    new bootstrap.Modal(document.getElementById('batchImportModal')).show();
+}
+
+function handleBatchFile(input) {
+    var file = input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            var data = new Uint8Array(e.target.result);
+            var workbook = XLSX.read(data, { type: 'array' });
+            var sheet = workbook.Sheets[workbook.SheetNames[0]];
+            var json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            parseAndValidateBatch(json);
+        } catch(err) {
+            alert('Excel文件解析失败：' + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function parseAndValidateBatch(data) {
+    var headers = data[0] || [];
+    var rows = data.slice(1).filter(function(r) { return r.some(function(c) { return c !== undefined && c !== null && c !== ''; }); });
+    batchImportData = [];
+    var errors = [];
+    var rowNum = 1;
+    rows.forEach(function(row, idx) {
+        rowNum++;
+        var seq = row[0];
+        var ioType = String(row[1] || '').trim();
+        var date = String(row[2] || '').trim();
+        var name = String(row[3] || '').trim();
+        var category = String(row[4] || '').trim();
+        var qty = parseInt(row[5]) || 1;
+        var remark = String(row[6] || '').trim();
+        // 校验
+        if (!name) { errors.push('第' + rowNum + '行：货物名称不能为空'); return; }
+        // 校验货物类型
+        if (!VALID_CATEGORIES.includes(category)) {
+            errors.push('第' + rowNum + '行：货物类型"' + category + '"无效，可选：' + VALID_CATEGORIES.join('、'));
+            return;
+        }
+        // 校验货物名称是否在类型列表中
+        var validNames = WH_NAME_MAP[category] || [];
+        if (!validNames.includes(name)) {
+            errors.push('第' + rowNum + '行：货物名称"' + name + '"不属于类型"' + category + '"，可选：' + validNames.join('、'));
+            return;
+        }
+        // 校验出入库类型
+        if (!['入库', '出库', '报废'].includes(ioType)) {
+            errors.push('第' + rowNum + '行：出入库类型"' + ioType + '"无效');
+            return;
+        }
+        // 格式化日期
+        if (typeof date === 'number') {
+            var d = new Date((date - 25569) * 86400 * 1000);
+            date = d.toISOString().split('T')[0];
+        } else if (date) {
+            date = date.replace(/\./g, '-').substring(0, 10);
+        }
+        batchImportData.push({ type: ioType, date: date, name: name, category: category, qty: qty, remark: remark });
+    });
+    // 显示预览
+    var preview = document.getElementById('batch-preview');
+    if (errors.length > 0) {
+        preview.innerHTML = '<div class="alert alert-danger small"><strong>校验失败：</strong><br>' + errors.join('<br>') + '</div>';
+        document.getElementById('batch-import-btn').disabled = true;
+    } else if (batchImportData.length === 0) {
+        preview.innerHTML = '<p class="text-muted text-center">文件为空或无有效数据</p>';
+        document.getElementById('batch-import-btn').disabled = true;
+    } else {
+        var html = '<table class="table table-sm table-bordered"><thead><tr><th>序号</th><th>出入库类型</th><th>时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th></tr></thead><tbody>';
+        batchImportData.forEach(function(item, idx) {
+            html += '<tr><td>'+(idx+1)+'</td><td>'+item.type+'</td><td>'+item.date+'</td><td>'+item.name+'</td><td>'+item.category+'</td><td>'+item.qty+'</td><td>'+(item.remark||'')+'</td></tr>';
+        });
+        html += '</tbody></table><p class="text-success small mt-2">共 ' + batchImportData.length + ' 条记录，校验通过</p>';
+        preview.innerHTML = html;
+        document.getElementById('batch-import-btn').disabled = false;
+    }
+}
+
+function confirmBatchImport() {
+    if (batchImportData.length === 0) return;
+    batchImportData.forEach(function(item) {
+        whRecords.unshift({
+            id: Date.now() + Math.random(),
+            type: item.type,
+            name: item.name,
+            category: item.category,
+            qty: item.qty,
+            date: item.date,
+            remark: item.remark
+        });
+    });
+    saveWarehouseRecords();
+    bootstrap.Modal.getInstance(document.getElementById('batchImportModal')).hide();
+    renderWarehouse();
+    alert('成功导入 ' + batchImportData.length + ' 条记录');
+}
+
+function downloadBatchTemplate() {
+    var data = [
+        ['序号', '出入库类型', '出入库时间', '货物名称', '货物类型', '数量', '备注'],
+        [1, '入库', '2025-11-01', 'OKI存取款机', '现金自助设备', 1, ''],
+        [2, '出库', '2025-11-15', 'OKI存取款机', '现金自助设备', 1, ''],
+        [3, '入库', '2025-12-01', '智能柜台', '自助设备', 2, '']
+    ];
+    var ws = XLSX.utils.aoa_to_sheet(data);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '批量导入');
+    XLSX.writeFile(wb, '批量导入模板.xlsx');
+}
+
+init();
+</script>
+</body>
+</html>
