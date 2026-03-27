@@ -11,5 +11,18 @@
     "create_time": "2026-03-27T17:33:00Z",
     "assign_time": "2026-03-27T17:33:00Z",
     "created_by": "nexu-agent-jax"
+  },
+  {
+    "id": "WO202603271738",
+    "dept": "江南区五一东路7号淡村商贸城6号楼一层6-115号商铺淡村桂林银行",
+    "person": "玉贵文",
+    "phone": "13788112515",
+    "device": "网银一体机/LED走字屏",
+    "description": "具体故障：LED无法更改显示内容，软件内显示无设备",
+    "vendor": "广西佳仕运网络科技有限公司",
+    "status": "响应中",
+    "create_time": "2026-03-27T17:38:00Z",
+    "assign_time": "2026-03-27T17:38:00Z",
+    "created_by": "nexu-agent-jax"
   }
 ]
