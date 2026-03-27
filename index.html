@@ -182,7 +182,8 @@
                 运维商
             </div>
             <div class="card">
-                <table class="table table-sm mb-0" id="vendor-table"><thead><tr><th>设备</th><th>运维商</th><th>联系人</th><th>电话</th></tr></thead><tbody></tbody></table>
+                <div class="card-header d-flex justify-content-between align-items-center"><span>运维商列表</span><button class="btn btn-primary btn-sm" onclick="showVendorModal()">新增</button></div>
+                <table class="table table-sm mb-0" id="vendor-table"><thead><tr><th>设备</th><th>运维商</th><th>联系人</th><th>电话</th><th>操作</th></tr></thead><tbody></tbody></table>
             </div>
         </div>
         <!-- 仓储管理页面 -->
@@ -284,6 +285,23 @@
 <div class="modal fade" id="pendingModal"><div class="modal-dialog modal-lg"><div class="modal-content">
     <div class="modal-header"><h6 class="modal-title">工单明细</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body" id="pending-content"></div>
+</div></div></div>
+
+<!-- 运维商编辑modal -->
+<div class="modal fade" id="vendorModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title" id="vmodal-title">编辑运维商</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <input type="hidden" id="v-index">
+        <div class="mb-2"><label class="small">设备类型</label>
+            <select class="form-select form-select-sm" id="v-type">
+                <option>存取款一体机/ATM</option><option>高速大额存取款机</option><option>回单机/自助终端</option><option>综合版智能柜台</option><option>标准版智能柜台</option><option>网银一体机/LED走字屏</option><option>空调维护</option><option>零星维修</option><option>叫号机/宣传屏</option><option>征信查询机</option><option>安防</option><option>网络设备</option><option>其他</option>
+            </select>
+        </div>
+        <div class="mb-2"><label class="small">运维商</label><input type="text" class="form-control form-control-sm" id="v-vendor"></div>
+        <div class="mb-2"><label class="small">联系人</label><input type="text" class="form-control form-control-sm" id="v-contact"></div>
+        <div class="mb-2"><label class="small">电话</label><input type="text" class="form-control form-control-sm" id="v-phone"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveVendor()">保存</button></div>
 </div></div></div>
 
 <!-- 仓储操作modal -->
@@ -406,6 +424,7 @@ let sfAllResults = [];
 
 function init() {
     loadWorkorders();
+    loadVendors();
     updateVendorFilter();
     renderWorkorders();
     renderDashboard();
@@ -654,8 +673,68 @@ function renderDashboard() {
 
 function renderVendors() {
     var html = '';
-    vendors.forEach(function(v) { html += '<tr><td>'+v.type+'</td><td>'+v.vendor+'</td><td>'+v.contact+'</td><td>'+v.phone+'</td></tr>'; });
+    vendors.forEach(function(v, idx) { html += '<tr><td>'+v.type+'</td><td>'+v.vendor+'</td><td>'+v.contact+'</td><td>'+v.phone+'</td><td><button class="btn btn-link btn-sm p-0" onclick="editVendor('+idx+')">编辑</button></td></tr>'; });
     document.querySelector('#vendor-table tbody').innerHTML = html;
+}
+
+function showVendorModal(idx) {
+    var modal = document.getElementById('vendorModal');
+    if (idx !== undefined) {
+        document.getElementById('vmodal-title').textContent = '编辑运维商';
+        document.getElementById('v-index').value = idx;
+        document.getElementById('v-type').value = vendors[idx].type;
+        document.getElementById('v-vendor').value = vendors[idx].vendor;
+        document.getElementById('v-contact').value = vendors[idx].contact;
+        document.getElementById('v-phone').value = vendors[idx].phone;
+    } else {
+        document.getElementById('vmodal-title').textContent = '新增运维商';
+        document.getElementById('v-index').value = '';
+        document.getElementById('v-type').value = '存取款一体机/ATM';
+        document.getElementById('v-vendor').value = '';
+        document.getElementById('v-contact').value = '';
+        document.getElementById('v-phone').value = '';
+    }
+    new bootstrap.Modal(modal).show();
+}
+
+function editVendor(idx) { showVendorModal(idx); }
+
+function saveVendor() {
+    var idx = document.getElementById('v-index').value;
+    var type = document.getElementById('v-type').value;
+    var vendor = document.getElementById('v-vendor').value.trim();
+    var contact = document.getElementById('v-contact').value.trim();
+    var phone = document.getElementById('v-phone').value.trim();
+    if (!vendor) { alert('请输入运维商名称'); return; }
+    if (idx !== '') {
+        vendors[idx] = {type: type, vendor: vendor, contact: contact, phone: phone};
+        deviceVendorMap[type] = vendor;
+    } else {
+        vendors.push({type: type, vendor: vendor, contact: contact, phone: phone});
+        deviceVendorMap[type] = vendor;
+    }
+    saveVendors();
+    bootstrap.Modal.getInstance(document.getElementById('vendorModal')).hide();
+    renderVendors();
+    updateVendorFilter();
+}
+
+function saveVendors() {
+    localStorage.setItem('vendors_local', JSON.stringify(vendors));
+    localStorage.setItem('deviceVendorMap_local', JSON.stringify(deviceVendorMap));
+}
+
+function loadVendors() {
+    var saved = localStorage.getItem('vendors_local');
+    if (saved) {
+        try { 
+            vendors = JSON.parse(saved);
+            var savedMap = localStorage.getItem('deviceVendorMap_local');
+            if (savedMap) {
+                try { Object.assign(deviceVendorMap, JSON.parse(savedMap)); } catch(e) {}
+            }
+        } catch(e) {}
+    }
 }
 
 function showPage(page) {
