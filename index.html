@@ -486,6 +486,7 @@ function detectDevice(text) {
     if (t.indexOf('综合版') >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '综合版智能柜台';
     if (t.indexOf('标准版') >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '标准版智能柜台';
     if (t.indexOf('LED') >= 0 || t.indexOf('走字屏') >= 0 || t.indexOf('显示屏') >= 0) return '网银一体机/LED走字屏';
+    if (t.indexOf('壁挂') >= 0 || t.indexOf('挂机') >= 0) return '其它设备'; // 专项匹配壁挂式空调
     if (t.indexOf('空调') >= 0) return '空调维护';
     if (t.indexOf('叫号') >= 0 || t.indexOf('宣传屏') >= 0 || t.indexOf('排队机') >= 0) return '叫号机/宣传屏';
     if (t.indexOf('征信') >= 0 || t.indexOf('查询机') >= 0) return '征信查询机';
