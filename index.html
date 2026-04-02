@@ -20,9 +20,9 @@
         .card-header{background:#fff;border-bottom:1px solid #eee;padding:12px 15px;font-weight:600}
         .btn-primary{background:#1976d2;border:none;color:#fff}
         .btn-primary:hover{background:#1565c0}
-        table{font-size:13px;width:100%}
-        th{background:#f8f9fa;padding:10px;text-align:left;font-weight:600;color:#666;font-size:12px}
-        td{padding:10px;border-bottom:1px solid #eee}
+        table{font-size:13px;width:100%;table-layout:fixed}
+        th{background:#f8f9fa;padding:8px 5px;text-align:left;font-weight:600;color:#666;font-size:12px;white-space:nowrap}
+        td{padding:8px 5px;border-bottom:1px solid #eee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
         .chart-container{position:relative;height:200px}
         .status-select{width:80px;padding:2px 4px;font-size:11px;border-radius:4px;border:1px solid #ddd;background:#fff}
         .clickable-num{cursor:pointer;color:#007bff;font-weight:bold}
@@ -717,7 +717,7 @@ function renderWorkorders() {
         var descShort = (o.description || '').substring(0, 15);
         var statusColor = o.status === '响应中' ? '#007bff' : o.status === '审批中' ? '#6f42c1' : '#28a745';
         var completeTime = o.complete_time ? new Date(o.complete_time).toLocaleString() : '-';
-        html += '<tr><td style="font-size:12px">'+o.id+'</td><td style="font-size:12px">'+(o.dept||'')+'</td><td style="font-size:12px">'+(o.device||'')+'</td><td style="font-size:12px"><a href="javascript:void(0)" onclick="showOrderDetail(\''+o.id+'\')" title="'+(o.description||'')+'">'+descShort+'</a></td><td><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px">'+(o.vendor||'-')+'</td><td><input type="text" class="form-control form-control-sm" value="'+(o.remark||'')+'" placeholder="备注" onchange="updateRemark(\''+o.id+'\', this.value)" style="width:120px;font-size:12px;padding:2px 4px;"></td><td style="font-size:12px">'+ct.toLocaleDateString()+'</td><td style="font-size:12px;color:'+(o.status==='已完成'?'#28a745':'#999')+'">'+completeTime+'</td><td><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
+        html += '<tr><td style="font-size:12px;white-space:nowrap">'+o.id+'</td><td style="font-size:12px;white-space:nowrap">'+(o.dept||'')+'</td><td style="font-size:12px;white-space:nowrap">'+(o.device||'')+'</td><td style="font-size:12px;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis"><a href="javascript:void(0)" onclick="showOrderDetail(\''+o.id+'\')" title="'+(o.description||'')+'">'+descShort+'</a></td><td style="white-space:nowrap"><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px;white-space:nowrap">'+(o.vendor||'-')+'</td><td style="max-width:80px;overflow:hidden"><input type="text" class="form-control form-control-sm" value="'+(o.remark||'')+'" placeholder="备注" onchange="updateRemark(\''+o.id+'\', this.value)" style="width:100%;font-size:12px;padding:2px;height:24px;"></td><td style="font-size:12px;white-space:nowrap">'+ct.toLocaleDateString()+'</td><td style="font-size:12px;white-space:nowrap;color:'+(o.status==='已完成'?'#28a745':'#999')+'">'+completeTime+'</td><td style="white-space:nowrap"><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
     });
     document.querySelector('#workorder-table tbody').innerHTML = html;
     document.getElementById('page-info').textContent = '共' + filtered.length + '条 第' + currentPage + '/' + totalPages + '页';
