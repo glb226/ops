@@ -20,9 +20,9 @@
         .card-header{background:#fff;border-bottom:1px solid #eee;padding:12px 15px;font-weight:600}
         .btn-primary{background:#1976d2;border:none;color:#fff}
         .btn-primary:hover{background:#1565c0}
-        table{font-size:13px;width:100%}
-        th{background:#f8f9fa;padding:10px;text-align:left;font-weight:600;color:#666;font-size:12px}
-        td{padding:10px;border-bottom:1px solid #eee}
+        table{font-size:13px;width:100%;table-layout:fixed}
+        th{background:#f8f9fa;padding:8px 5px;text-align:left;font-weight:600;color:#666;font-size:12px;white-space:nowrap}
+        td{padding:8px 5px;border-bottom:1px solid #eee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
         .chart-container{position:relative;height:200px}
         .status-select{width:80px;padding:2px 4px;font-size:11px;border-radius:4px;border:1px solid #ddd;background:#fff}
         .clickable-num{cursor:pointer;color:#007bff;font-weight:bold}
@@ -56,9 +56,13 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <span>运维商</span>
         </a>
-        <a href="#" onclick="showPage('warehouse');return false;" class="d-flex align-items-center gap-2" id="nav-warehouse">
+<a href="#" onclick="showPage('warehouse');return false;" class="d-flex align-items-center gap-2" id="nav-warehouse">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             <span>仓储管理</span>
+        </a>
+        <a href="#" onclick="showPage('settings');return false;" class="d-flex align-items-center gap-2" id="nav-settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>系统设置</span>
         </a>
     </div>
     <div class="main-content">
@@ -99,9 +103,12 @@
             </div>
         </div>
         <div id="page-workorders" style="display:none;">
-            <div class="page-title d-flex align-items-center gap-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                工单管理
+            <div class="page-title d-flex align-items-center gap-2 justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    工单管理
+                </div>
+                <button class="btn btn-info btn-sm text-white" onclick="syncFromGist()">🔄 同步云端数据</button>
             </div>
             <div class="card mb-2">
                 <div class="card-body">
@@ -141,7 +148,7 @@
             </div>
             <div style="overflow-x:auto">
                 <table class="table table-sm table-hover" id="workorder-table">
-                    <thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>故障</th><th>状态</th><th>运维商</th><th>时间</th><th>操作</th></tr></thead>
+                    <thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>故障</th><th>状态</th><th>运维商</th><th>备注</th><th>创建时间</th><th>完成时间</th><th>操作</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -186,7 +193,17 @@
                 <table class="table table-sm mb-0" id="vendor-table"><thead><tr><th>设备</th><th>运维商</th><th>联系人</th><th>电话</th><th>操作</th></tr></thead><tbody></tbody></table>
             </div>
         </div>
-        <!-- 仓储管理页面 -->
+                <!-- [New] 系统设置页面 -->
+        <div id="page-settings" style="display:none;">
+            <div class="page-title">系统设置 (贾克斯信箱配置)</div>
+            <div class="card p-4">
+                <label class="small fw-bold mb-2">GitHub Gist ID</label>
+                <input type="text" class="form-control mb-3" id="gist-id-input" placeholder="输入 32 位 ID">
+                <button class="btn btn-primary btn-sm" onclick="saveGistSetting()">保存配置</button>
+                <div class="form-text mt-2">填入 <b>6ae766bcc9cb000bbda0006debc06ef3</b> 连通贾克斯信箱。</div>
+            </div>
+        </div>
+<!-- 仓储管理页面 -->
         <div id="page-warehouse" style="display:none;">
             <div class="page-title d-flex align-items-center gap-2">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -287,6 +304,12 @@
     <div class="modal-body" id="pending-content"></div>
 </div></div></div>
 
+<!-- 工单详情弹窗 -->
+<div class="modal fade" id="orderDetailModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title">维修详情</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="order-detail-content"></div>
+</div></div></div>
+
 <!-- 运维商编辑modal -->
 <div class="modal fade" id="vendorModal"><div class="modal-dialog"><div class="modal-content">
     <div class="modal-header"><h6 class="modal-title" id="vmodal-title">编辑运维商</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -348,11 +371,101 @@
     </div>
 </div></div></div>
 
-<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- 工单详情弹窗 -->
+<div class="modal fade" id="orderDetailModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title">维修详情</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="order-detail-content"></div>
+</div></div></div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js">
+// --- 贾克斯植入的同步逻辑开始 ---
+const GIST_SET_KEY = 'GIST_ID_VAL';
+function saveGistSetting() {
+    const val = document.getElementById('gist-id-input').value.trim();
+    localStorage.setItem(GIST_SET_KEY, val);
+    alert('配置已完成！请回工单管理点击同步。');
+    showPage('workorders');
+}
+
+async function syncFromGist() {
+    const gistId = localStorage.getItem(GIST_SET_KEY);
+    if(!gistId) { alert('请先在“系统设置”配置 Gist ID'); return; }
+    const btn = document.querySelector('button[onclick="syncFromGist()"]');
+    const oldText = btn.innerText;
+    btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
+    try {
+        const res = await fetch(`https://api.github.com/gists/${gistId}`);
+        const data = await res.json();
+        const content = JSON.parse(data.files['workorders.json'].content);
+        content.forEach(n => { if(!workorders.some(o => o.id === n.id)) workorders.unshift(n); });
+        saveWorkorders();
+        renderWorkorders();
+        alert('🎉 同步完毕，加载成功！');
+    } catch(err) { alert('同步失败：' + err.message); }
+    finally { btn.disabled = false; btn.innerText = oldText; }
+}
+// --- 贾克斯植入的同步逻辑结束 ---
+</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
+// --- 贾克斯植入的同步逻辑开始 ---
+const GIST_SET_KEY = 'GIST_ID_VAL';
+function saveGistSetting() {
+    const val = document.getElementById('gist-id-input').value.trim();
+    localStorage.setItem(GIST_SET_KEY, val);
+    alert('配置已完成！请回工单管理点击同步。');
+    showPage('workorders');
+}
+
+async function syncFromGist() {
+    const gistId = localStorage.getItem(GIST_SET_KEY);
+    if(!gistId) { alert('请先在“系统设置”配置 Gist ID'); return; }
+    const btn = document.querySelector('button[onclick="syncFromGist()"]');
+    const oldText = btn.innerText;
+    btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
+    try {
+        const res = await fetch(`https://api.github.com/gists/${gistId}`);
+        const data = await res.json();
+        const content = JSON.parse(data.files['workorders.json'].content);
+        content.forEach(n => { if(!workorders.some(o => o.id === n.id)) workorders.unshift(n); });
+        saveWorkorders();
+        renderWorkorders();
+        alert('🎉 同步完毕，加载成功！');
+    } catch(err) { alert('同步失败：' + err.message); }
+    finally { btn.disabled = false; btn.innerText = oldText; }
+}
+// --- 贾克斯植入的同步逻辑结束 ---
+</script>
+<script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+// --- 贾克斯植入的同步逻辑开始 ---
+const GIST_SET_KEY = 'GIST_ID_VAL';
+function saveGistSetting() {
+    const val = document.getElementById('gist-id-input').value.trim();
+    localStorage.setItem(GIST_SET_KEY, val);
+    alert('配置已完成！请回工单管理点击同步。');
+    showPage('workorders');
+}
+
+async function syncFromGist() {
+    const gistId = localStorage.getItem(GIST_SET_KEY);
+    if(!gistId) { alert('请先在“系统设置”配置 Gist ID'); return; }
+    const btn = document.querySelector('button[onclick="syncFromGist()"]');
+    const oldText = btn.innerText;
+    btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
+    try {
+        const res = await fetch(`https://api.github.com/gists/${gistId}`);
+        const data = await res.json();
+        const content = JSON.parse(data.files['workorders.json'].content);
+        content.forEach(n => { if(!workorders.some(o => o.id === n.id)) workorders.unshift(n); });
+        saveWorkorders();
+        renderWorkorders();
+        alert('🎉 同步完毕，加载成功！');
+    } catch(err) { alert('同步失败：' + err.message); }
+    finally { btn.disabled = false; btn.innerText = oldText; }
+}
+// --- 贾克斯植入的同步逻辑结束 ---
+</script>
 <script>
-const STORAGE_KEY = 'workorders_local2';
+const STORAGE_KEY = 'workorders_local';
 let workorders = [];
 let currentPage = 1;
 const PAGE_SIZE = 20;
@@ -540,6 +653,7 @@ function confirmCreate() {
             device: document.getElementById('edit-device').value,
             description: document.getElementById('edit-desc').value,
             vendor: document.getElementById('edit-vendor').value,
+            remark: '',
             status: '响应中',
             create_time: new Date().toISOString(),
             complete_time: null
@@ -600,9 +714,10 @@ function renderWorkorders() {
     var html = '';
     pageData.forEach(function(o) {
         var ct = new Date(o.create_time);
-        var desc = (o.description || '').substring(0, 20);
+        var descShort = (o.description || '').substring(0, 15);
         var statusColor = o.status === '响应中' ? '#007bff' : o.status === '审批中' ? '#6f42c1' : '#28a745';
-        html += '<tr><td style="font-size:12px">'+o.id+'</td><td style="font-size:12px">'+(o.dept||'')+'</td><td style="font-size:12px">'+(o.device||'')+'</td><td style="font-size:12px" title="'+(o.description||'')+'">'+desc+'</td><td><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px">'+(o.vendor||'-')+'</td><td style="font-size:12px">'+ct.toLocaleDateString()+'</td><td><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
+        var completeTime = o.complete_time ? new Date(o.complete_time).toLocaleString() : '-';
+        html += '<tr><td style="font-size:12px">'+o.id+'</td><td style="font-size:12px">'+(o.dept||'')+'</td><td style="font-size:12px">'+(o.device||'')+'</td><td style="font-size:12px;white-space:normal;overflow:visible;text-overflow:unset;max-width:120px"><a href="javascript:void(0)" onclick="showOrderDetail(\''+o.id+'\')" title="'+(o.description||'')+'">'+descShort+'</a></td><td style="white-space:nowrap"><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px">'+(o.vendor||'-')+'</td><td style="max-width:100px;overflow:hidden"><input type="text" class="form-control form-control-sm" value="'+(o.remark||'')+'" placeholder="备注" onchange="updateRemark(\''+o.id+'\', this.value)" style="width:100%;font-size:12px;padding:2px 4px;height:26px;"></td><td style="font-size:12px">'+ct.toLocaleDateString()+'</td><td style="font-size:12px;color:'+(o.status==='已完成'?'#28a745':'#999')+'">'+completeTime+'</td><td style="white-space:nowrap"><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
     });
     document.querySelector('#workorder-table tbody').innerHTML = html;
     document.getElementById('page-info').textContent = '共' + filtered.length + '条 第' + currentPage + '/' + totalPages + '页';
@@ -611,6 +726,32 @@ function renderWorkorders() {
 function updateStatus(id, status) {
     var order = workorders.find(function(o) { return o.id === id; });
     if (order) { order.status = status; if (status === '已完成') order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); renderDashboard(); }
+}
+
+function updateRemark(id, remark) {
+    var order = workorders.find(function(o) { return o.id === id; });
+    if (order) { order.remark = remark; saveWorkorders(); }
+}
+
+function showOrderDetail(id) {
+    var order = workorders.find(function(o) { return o.id === id; });
+    if (!order) return;
+    var detail = '<table class="table table-sm"><tr><td style="width:80px;font-weight:bold">工单号</td><td>'+order.id+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">机构</td><td>'+(order.dept||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">报修人</td><td>'+(order.person||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">电话</td><td>'+(order.phone||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">设备</td><td>'+(order.device||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">运维商</td><td>'+(order.vendor||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">故障描述</td><td style="word-break:break-all">'+(order.description||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">备注</td><td style="word-break:break-all">'+(order.remark||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">状态</td><td>'+(order.status||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">创建时间</td><td>'+new Date(order.create_time).toLocaleString()+'</td></tr>';
+    if (order.complete_time) {
+        detail += '<tr><td style="font-weight:bold">完成时间</td><td>'+new Date(order.complete_time).toLocaleString()+'</td></tr>';
+    }
+    detail += '</table>';
+    document.getElementById('order-detail-content').innerHTML = detail;
+    new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
 }
 
 function changePage(delta) {
@@ -738,13 +879,13 @@ function loadVendors() {
 }
 
 function showPage(page) {
-    ['generate', 'workorders', 'dashboard', 'vendors', 'warehouse'].forEach(function(p) { document.getElementById('page-' + p).style.display = 'none'; document.getElementById('nav-' + p).classList.remove('active'); });
+    ['generate', 'workorders', 'dashboard', 'vendors', 'warehouse', 'settings'].forEach(function(p) { const el = document.getElementById('page-' + p); if(el) el.style.display = 'none'; const nav = document.getElementById('nav-' + p); if(nav) nav.classList.remove('active'); });
     document.getElementById('page-' + page).style.display = 'block';
     document.getElementById('nav-' + page).classList.add('active');
     if (page === 'workorders') renderWorkorders();
     else if (page === 'dashboard') renderDashboard();
     else if (page === 'vendors') renderVendors();
-    else if (page === 'warehouse') { renderWarehouse(); }
+    else if (page === 'warehouse') { renderWarehouse(); } if (page === 'settings') { document.getElementById('gist-id-input').value = localStorage.getItem('GIST_ID_VAL') || ''; }
 }
 
 // ==================== 仓储管理 JS ====================
@@ -1121,6 +1262,34 @@ function downloadBatchTemplate() {
 }
 
 init();
+
+// --- 贾克斯植入的同步逻辑开始 ---
+const GIST_SET_KEY = 'GIST_ID_VAL';
+function saveGistSetting() {
+    const val = document.getElementById('gist-id-input').value.trim();
+    localStorage.setItem(GIST_SET_KEY, val);
+    alert('配置已完成！请回工单管理点击同步。');
+    showPage('workorders');
+}
+
+async function syncFromGist() {
+    const gistId = localStorage.getItem(GIST_SET_KEY);
+    if(!gistId) { alert('请先在“系统设置”配置 Gist ID'); return; }
+    const btn = document.querySelector('button[onclick="syncFromGist()"]');
+    const oldText = btn.innerText;
+    btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
+    try {
+        const res = await fetch(`https://api.github.com/gists/${gistId}`);
+        const data = await res.json();
+        const content = JSON.parse(data.files['workorders.json'].content);
+        content.forEach(n => { if(!workorders.some(o => o.id === n.id)) workorders.unshift(n); });
+        saveWorkorders();
+        renderWorkorders();
+        alert('🎉 同步完毕，加载成功！');
+    } catch(err) { alert('同步失败：' + err.message); }
+    finally { btn.disabled = false; btn.innerText = oldText; }
+}
+// --- 贾克斯植入的同步逻辑结束 ---
 </script>
 </body>
 </html>
