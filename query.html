@@ -51,82 +51,76 @@
             background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
             color: #fff; 
         }
+        
+        /* 查询结果卡片 */
         .result-card { 
             background: #fff; 
             border-radius: 16px; 
-            padding: 18px; 
+            padding: 16px; 
             box-shadow: 0 4px 16px rgba(0,0,0,0.08); 
             margin-bottom: 12px; 
-            border-left: 4px solid #1976d2;
         }
-        .order-id { 
-            font-size: 12px; 
-            color: #90caf9; 
-            margin-bottom: 8px; 
-            font-weight: 500;
+        .result-card .row-group {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            flex-wrap: wrap;
         }
-        .order-id strong { 
-            color: #1565c0; 
-            font-size: 13px;
+        .result-card .row-group:last-child {
+            border-bottom: none;
         }
-        .order-title { 
-            font-size: 15px; 
-            font-weight: 600; 
-            color: #212529; 
-            margin-bottom: 10px; 
-            line-height: 1.5;
-            background: #f8f9fa;
-            padding: 10px 12px;
+        .result-card .row-label {
+            font-size: 12px;
+            color: #999;
+            min-width: 70px;
+        }
+        .result-card .row-value {
+            font-size: 14px;
+            color: #333;
+            flex: 1;
+        }
+        .result-card .row-value.no-label {
+            margin-left: 0;
+        }
+        .result-card .dept-row {
+            background: #e3f2fd;
             border-radius: 8px;
+            padding: 10px 12px !important;
+            margin-bottom: 8px;
         }
-        .order-info { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 8px;
-            margin-bottom: 12px;
+        .result-card .dept-row .row-label {
+            color: #1976d2;
         }
-        .order-info-item {
-            font-size: 13px;
+        .result-card .dept-row .row-value {
+            font-weight: 600;
+            color: #1565c0;
+        }
+        .result-card .desc-row {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px !important;
+        }
+        .result-card .desc-row .row-label {
             color: #666;
         }
-        .order-info-item .label {
-            color: #999;
-            font-size: 11px;
+        .result-card .desc-row .row-value {
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
         }
-        .status-badge { 
+        .result-card .status-badge { 
             display: inline-block; 
-            padding: 6px 14px; 
+            padding: 4px 12px; 
             border-radius: 20px; 
-            font-size: 13px; 
+            font-size: 12px; 
             font-weight: 600; 
         }
         .status-响应中 { background: #e3f2fd; color: #1976d2; }
         .status-审批中 { background: #f3e8ff; color: #6f42c1; }
         .status-已完成 { background: #e8f5e9; color: #2e7d32; }
-        .vendor-info { 
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
-            border-radius: 10px; 
-            padding: 12px 14px; 
-            margin-top: 12px; 
-        }
-        .vendor-info h6 { 
-            font-size: 12px; 
-            color: #666; 
-            margin-bottom: 6px; 
-            font-weight: 500;
-        }
-        .vendor-info p { 
-            font-size: 14px; 
-            margin: 0 0 4px 0; 
-            color: #212529; 
-            font-weight: 500;
-        }
-        .vendor-info .phone { 
-            color: #1976d2; 
-            font-weight: 600; 
-            text-decoration: none; 
-            font-size: 14px;
-        }
+        
+        /* 空状态和加载 */
         .empty-state { 
             text-align: center; 
             padding: 50px 20px; 
@@ -161,9 +155,9 @@
         }
         @media (max-width: 576px) {
             .container { padding: 12px; }
-            .search-card, .result-card { padding: 15px; border-radius: 12px; }
+            .search-card, .result-card { padding: 14px; border-radius: 12px; }
             .header h1 { font-size: 20px; }
-            .order-info { grid-template-columns: 1fr; }
+            .result-card .row-group { padding: 6px 0; }
         }
     </style>
 </head>
@@ -201,14 +195,11 @@
             '其他': { contact: '', phone: '' }
         };
         
-        // 显示同步状态
         function showSyncStatus(msg) {
             document.getElementById('sync-status').textContent = msg;
         }
         
-        // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 优先从本地缓存加载
             const saved = localStorage.getItem('workorders_query');
             if (saved) {
                 try {
@@ -217,21 +208,17 @@
                 } catch(e) {}
             }
             
-            // 回车搜索
             document.getElementById('search-input').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') searchOrders();
             });
             
-            // 立即同步云端数据
             syncFromGist();
             
-            // 每3分钟静默同步一次
             setInterval(function() {
                 syncFromGist(true);
             }, 3 * 60 * 1000);
         });
         
-        // 从Gist同步数据
         async function syncFromGist(silent) {
             if (!silent) showSyncStatus('正在加载数据...');
             
@@ -266,7 +253,6 @@
             }
         }
         
-        // 搜索工单
         function searchOrders() {
             const keyword = document.getElementById('search-input').value.trim();
             if (!keyword) {
@@ -283,7 +269,7 @@
             if (filtered.length === 0) {
                 document.getElementById('results').innerHTML = `
                     <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <svg viewBox="0 0 24 24" fill="none"stroke="currentColor" stroke-width="1.5">
                             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                             <path d="M11 8v6M8 11h6"/>
                         </svg>
@@ -297,7 +283,6 @@
             renderResults(filtered);
         }
         
-        // 渲染结果
         function renderResults(orders) {
             if (!orders || orders.length === 0) {
                 document.getElementById('results').innerHTML = `
@@ -322,38 +307,51 @@
                 const desc = order.description || order.desc || '暂无描述';
                 const status = order.status || '响应中';
                 const vendor = order.vendor || '其他';
-                const remark = order.remark || '';
                 const contactInfo = vendorContacts[vendor] || { contact: '', phone: '' };
                 
                 html += `
                     <div class="result-card">
-                        <div class="order-id">工单号：<strong>${order.id}</strong></div>
-                        <div class="order-title">${desc}</div>
-                        <div class="order-info">
-                            <div class="order-info-item">
-                                <div class="label">报修日期</div>
-                                <div>${date}</div>
-                            </div>
-                            <div class="order-info-item">
-                                <div class="label">运维商</div>
-                                <div style="font-weight:500">${vendor}</div>
-                            </div>
-                            <div class="order-info-item">
-                                <div class="label">网点</div>
-                                <div>${order.dept || '-'}</div>
-                            </div>
-                            <div class="order-info-item">
-                                <div class="label">状态</div>
-                                <span class="status-badge status-${status}">${status}</span>
-                            </div>
+                        <!-- 第一排：网点名称（突出显示） -->
+                        <div class="row-group dept-row">
+                            <span class="row-label">网点名称</span>
+                            <span class="row-value">${order.dept || '-'}</span>
                         </div>
-                        ${remark ? `<div style="font-size:13px;color:#666;margin-bottom:10px;padding:8px;background:#fff9c4;border-radius:6px;">📝 ${remark}</div>` : ''}
-                        ${contactInfo.phone ? `
-                            <div class="vendor-info">
-                                <h6>👤 维修人员</h6>
-                                <p>${contactInfo.contact}</p>
-                                <a href="tel:${contactInfo.phone}" class="phone">📞 ${contactInfo.phone}</a>
-                            </div>
+                        
+                        <!-- 第二排：工单号 + 报修日期 -->
+                        <div class="row-group">
+                            <span class="row-label">工单号</span>
+                            <span class="row-value">${order.id}</span>
+                            <span class="row-label" style="margin-left:20px">报修日期</span>
+                            <span class="row-value">${date}</span>
+                        </div>
+                        
+                        <!-- 第三排：运维商 + 工单状态 -->
+                        <div class="row-group">
+                            <span class="row-label">运维商</span>
+                            <span class="row-value">${vendor}</span>
+                            <span class="row-label" style="margin-left:20px">状态</span>
+                            <span class="row-value"><span class="status-badge status-${status}">${status}</span></span>
+                        </div>
+                        
+                        <!-- 第四排：维修人员-姓名-电话 -->
+                        <div class="row-group">
+                            <span class="row-label">维修人员</span>
+                            <span class="row-value">${contactInfo.contact}</span>
+                            ${contactInfo.phone ? `<a href="tel:${contactInfo.phone}" class="row-value" style="color:#1976d2;text-decoration:none;margin-left:10px">📞 ${contactInfo.phone}</a>` : ''}
+                        </div>
+                        
+                        <!-- 第五排：故障描述 -->
+                        <div class="row-group desc-row">
+                            <span class="row-label">故障描述</span>
+                            <span class="row-value">${desc}</span>
+                        </div>
+                        
+                        ${order.remark ? `
+                        <!-- 第六排：备注 -->
+                        <div class="row-group" style="background:#fff9c4;border-radius:8px;margin-top:8px">
+                            <span class="row-label">备　注</span>
+                            <span class="row-value">${order.remark}</span>
+                        </div>
                         ` : ''}
                     </div>
                 `;
