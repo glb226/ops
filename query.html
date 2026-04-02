@@ -78,17 +78,17 @@
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 尝试从localStorage加载
+            // 优先从本地缓存加载，立即显示
             const saved = localStorage.getItem('workorders_query');
             if (saved) {
                 try {
                     workorders = JSON.parse(saved);
                     renderResults(workorders);
                 } catch(e) {
-                    syncFromGist();
+                    document.getElementById('results').innerHTML = '<div class="loading"><p>加载中...</p></div>';
                 }
             } else {
-                syncFromGist();
+                document.getElementById('results').innerHTML = '<div class="loading"><p>首次加载，请稍候...</p></div>';
             }
             
             // 回车搜索
@@ -96,52 +96,86 @@
                 if (e.key === 'Enter') searchOrders();
             });
             
-            // 10分钟自动同步
+            // 后台静默同步（不阻塞页面显示）
+            syncFromGist();
+            
+            // 5分钟静默同步一次
             setInterval(function() {
-                syncFromGist();
-                console.log('自动同步完成: ' + new Date().toLocaleString());
-            }, 10 * 60 * 1000);
+                syncFromGist(true); // 静默模式
+            }, 5 * 60 * 1000);
         });
         
-        // 从Gist同步数据
-        async function syncFromGist() {
+        // 从Gist同步数据（silent=true时静默执行，不显示加载提示）
+        async function syncFromGist(silent) {
             const gistId = localStorage.getItem(GIST_ID_KEY);
             if (!gistId) {
-                document.getElementById('results').innerHTML = `
-                    <div class="empty-state">
-<p>请在管理系统中配置 Gist ID 并同步数据</p>
-                    </div>
-                `;
+                // 如果没有Gist ID但有本地缓存，显示缓存数据
+                if (workorders.length > 0) {
+                    renderResults(workorders);
+                } else if (!silent) {
+                    document.getElementById('results').innerHTML = `
+                        <div class="empty-state">
+                            <p>请在管理系统中配置 Gist ID 并同步数据</p>
+                        </div>
+                    `;
+                }
                 return;
             }
             
-            document.getElementById('results').innerHTML = `
-                <div class="loading">
-                    <p>正在加载数据...</p>
-                </div>
-            `;
+            // 非静默模式且数据为空时显示加载提示
+            if (!silent && workorders.length === 0) {
+                document.getElementById('results').innerHTML = `
+                    <div class="loading">
+                        <p>正在加载数据...</p>
+                    </div>
+                `;
+            }
             
             try {
-                const res = await fetch(`https://api.github.com/gists/${gistId}`);
+                const res = await fetch(`https://api.github.com/gists/${gistId}`, { cache: 'no-store' });
                 if (!res.ok) throw new Error('网络请求失败');
                 
                 const data = await res.json();
                 const content = data.files['workorders.json']?.content;
                 
                 if (content) {
-                    workorders = JSON.parse(content);
-                    localStorage.setItem('workorders_query', JSON.stringify(workorders));
-                    renderResults(workorders);
+                    const newData = JSON.parse(content);
+                    // 只在数据有变化时更新
+                    if (JSON.stringify(newData) !== JSON.stringify(workorders)) {
+                        workorders = newData;
+                        localStorage.setItem('workorders_query', JSON.stringify(workorders));
+                        renderResults(workorders);
+                    }
                 } else {
                     throw new Error('未找到工单数据');
                 }
             } catch(err) {
-                document.getElementById('results').innerHTML = `
-                    <div class="empty-state">
-                        <p>加载失败，请稍后重试</p>
-                        <p style="font-size:12px">${err.message}</p>
-                    </div>
-                `;
+                console.log('同步失败，使用本地缓存:', err.message);
+                // 同步失败时，如果本地有数据就保持显示（静默模式不做任何操作）
+                if (silent) return;
+                
+                const saved = localStorage.getItem('workorders_query');
+                if (saved) {
+                    try {
+                        workorders = JSON.parse(saved);
+                        if (workorders.length > 0) {
+                            renderResults(workorders);
+                            return;
+                        }
+                    } catch(e) {}
+                }
+                
+                // 如果有缓存数据就直接显示，否则显示错误
+                if (workorders.length > 0) {
+                    renderResults(workorders);
+                } else {
+                    document.getElementById('results').innerHTML = `
+                        <div class="empty-state">
+                            <p>加载失败，请稍后重试</p>
+                            <p style="font-size:12px">${err.message}</p>
+                        </div>
+                    `;
+                }
             }
         }
         
