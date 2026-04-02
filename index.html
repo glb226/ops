@@ -148,7 +148,7 @@
             </div>
             <div style="overflow-x:auto">
                 <table class="table table-sm table-hover" id="workorder-table">
-                    <thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>故障</th><th>状态</th><th>运维商</th><th>时间</th><th>操作</th></tr></thead>
+                    <thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>故障</th><th>状态</th><th>运维商</th><th>备注</th><th>创建时间</th><th>完成时间</th><th>操作</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -304,6 +304,12 @@
     <div class="modal-body" id="pending-content"></div>
 </div></div></div>
 
+<!-- 工单详情弹窗 -->
+<div class="modal fade" id="orderDetailModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title">维修详情</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="order-detail-content"></div>
+</div></div></div>
+
 <!-- 运维商编辑modal -->
 <div class="modal fade" id="vendorModal"><div class="modal-dialog"><div class="modal-content">
     <div class="modal-header"><h6 class="modal-title" id="vmodal-title">编辑运维商</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -363,6 +369,12 @@
         <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
         <button class="btn btn-primary btn-sm" id="batch-import-btn" onclick="confirmBatchImport()" disabled>确认导入</button>
     </div>
+</div></div></div>
+
+<!-- 工单详情弹窗 -->
+<div class="modal fade" id="orderDetailModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title">维修详情</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="order-detail-content"></div>
 </div></div></div>
 
 <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js">
@@ -641,6 +653,7 @@ function confirmCreate() {
             device: document.getElementById('edit-device').value,
             description: document.getElementById('edit-desc').value,
             vendor: document.getElementById('edit-vendor').value,
+            remark: '',
             status: '响应中',
             create_time: new Date().toISOString(),
             complete_time: null
@@ -701,9 +714,10 @@ function renderWorkorders() {
     var html = '';
     pageData.forEach(function(o) {
         var ct = new Date(o.create_time);
-        var desc = (o.description || '').substring(0, 20);
+        var descShort = (o.description || '').substring(0, 15);
         var statusColor = o.status === '响应中' ? '#007bff' : o.status === '审批中' ? '#6f42c1' : '#28a745';
-        html += '<tr><td style="font-size:12px">'+o.id+'</td><td style="font-size:12px">'+(o.dept||'')+'</td><td style="font-size:12px">'+(o.device||'')+'</td><td style="font-size:12px" title="'+(o.description||'')+'">'+desc+'</td><td><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px">'+(o.vendor||'-')+'</td><td style="font-size:12px">'+ct.toLocaleDateString()+'</td><td><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
+        var completeTime = o.complete_time ? new Date(o.complete_time).toLocaleString() : '-';
+        html += '<tr><td style="font-size:12px">'+o.id+'</td><td style="font-size:12px">'+(o.dept||'')+'</td><td style="font-size:12px">'+(o.device||'')+'</td><td style="font-size:12px"><a href="javascript:void(0)" onclick="showOrderDetail(\''+o.id+'\')" title="'+(o.description||'')+'">'+descShort+'</a></td><td><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px">'+(o.vendor||'-')+'</td><td><input type="text" class="form-control form-control-sm" value="'+(o.remark||'')+'" placeholder="备注" onchange="updateRemark(\''+o.id+'\', this.value)" style="width:120px;font-size:12px;padding:2px 4px;"></td><td style="font-size:12px">'+ct.toLocaleDateString()+'</td><td style="font-size:12px;color:'+(o.status==='已完成'?'#28a745':'#999')+'">'+completeTime+'</td><td><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
     });
     document.querySelector('#workorder-table tbody').innerHTML = html;
     document.getElementById('page-info').textContent = '共' + filtered.length + '条 第' + currentPage + '/' + totalPages + '页';
@@ -712,6 +726,32 @@ function renderWorkorders() {
 function updateStatus(id, status) {
     var order = workorders.find(function(o) { return o.id === id; });
     if (order) { order.status = status; if (status === '已完成') order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); renderDashboard(); }
+}
+
+function updateRemark(id, remark) {
+    var order = workorders.find(function(o) { return o.id === id; });
+    if (order) { order.remark = remark; saveWorkorders(); }
+}
+
+function showOrderDetail(id) {
+    var order = workorders.find(function(o) { return o.id === id; });
+    if (!order) return;
+    var detail = '<table class="table table-sm"><tr><td style="width:80px;font-weight:bold">工单号</td><td>'+order.id+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">机构</td><td>'+(order.dept||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">报修人</td><td>'+(order.person||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">电话</td><td>'+(order.phone||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">设备</td><td>'+(order.device||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">运维商</td><td>'+(order.vendor||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">故障描述</td><td style="word-break:break-all">'+(order.description||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">备注</td><td style="word-break:break-all">'+(order.remark||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">状态</td><td>'+(order.status||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">创建时间</td><td>'+new Date(order.create_time).toLocaleString()+'</td></tr>';
+    if (order.complete_time) {
+        detail += '<tr><td style="font-weight:bold">完成时间</td><td>'+new Date(order.complete_time).toLocaleString()+'</td></tr>';
+    }
+    detail += '</table>';
+    document.getElementById('order-detail-content').innerHTML = detail;
+    new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
 }
 
 function changePage(delta) {
