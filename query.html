@@ -255,16 +255,12 @@
         
         <!-- 网点设备查询内容 -->
         <div class="device-content" id="device-content">
-            <div class="search-card">
-                <h3>网点设备查询</h3>
-                <p style="font-size:13px;color:#666;margin-bottom:10px">设备维护信息由独立系统提供</p>
-            </div>
             <iframe class="device-iframe" id="device-iframe" src="设备运维查询.html"></iframe>
         </div>
     </div>
 
     <script>
-        const GIST_ID = '9ae11536cf7304baed38841a47c39385';
+        const FIXED_GIST_ID = '9ae11536cf7304baed38841a47c39385';
         let workorders = [];
         let currentTab = 'order';
         
@@ -331,8 +327,10 @@
         async function syncFromGist(silent) {
             if (!silent) showSyncStatus('正在加载数据...');
             
+            const gistId = FIXED_GIST_ID;
+            
             try {
-                const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, { 
+                const res = await fetch(`https://api.github.com/gists/${gistId}`, { 
                     cache: 'no-store',
                     signal: AbortSignal.timeout(15000)
                 });
@@ -346,7 +344,7 @@
                     workorders = newData;
                     localStorage.setItem('workorders_query', JSON.stringify(workorders));
                     renderResults(workorders);
-                    if (!silent) showSyncStatus('数据已更新: ' + new Date().toLocaleTimeString());
+                    if (!silent) showSyncStatus('数据已更新: ' + new Date().toLocaleTimeString() + ' (' + workorders.length + '条工单)');
                 } else {
                     throw new Error('未找到工单数据');
                 }
