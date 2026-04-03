@@ -197,6 +197,10 @@
         <div id="page-settings" style="display:none;">
             <div class="page-title">系统设置 (贾克斯信箱配置)</div>
             <div class="card p-4">
+                <label class="small fw-bold mb-2">GitHub Token</label>
+                <input type="password" class="form-control mb-3" id="github-token-input" placeholder="输入 GitHub Token (ghp_xxx)">
+                <button class="btn btn-primary btn-sm mb-3" onclick="saveGithubToken()">保存 Token</button>
+                <hr>
                 <label class="small fw-bold mb-2">GitHub Gist ID</label>
                 <input type="text" class="form-control mb-3" id="gist-id-input" placeholder="输入 32 位 ID">
                 <button class="btn btn-primary btn-sm" onclick="saveGistSetting()">保存配置</button>
@@ -660,6 +664,7 @@ function confirmCreate() {
         };
         workorders.unshift(order);
         saveWorkorders();
+        uploadToGist();
         updateVendorFilter();
         renderWorkorders();
         renderDashboard();
@@ -676,6 +681,7 @@ function deleteWorkorder(id) {
     if (!confirm('确定删除此工单?')) return;
     workorders = workorders.filter(function(o) { return o.id !== id; });
     saveWorkorders();
+    uploadToGist();
     renderWorkorders();
     renderDashboard();
 }
@@ -725,12 +731,12 @@ function renderWorkorders() {
 
 function updateStatus(id, status) {
     var order = workorders.find(function(o) { return o.id === id; });
-    if (order) { order.status = status; if (status === '已完成') order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); renderDashboard(); }
+    if (order) { order.status = status; if (status === '已完成') order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); uploadToGist(); renderDashboard(); }
 }
 
 function updateRemark(id, remark) {
     var order = workorders.find(function(o) { return o.id === id; });
-    if (order) { order.remark = remark; saveWorkorders(); }
+    if (order) { order.remark = remark; saveWorkorders(); uploadToGist(); }
 }
 
 function showOrderDetail(id) {
@@ -1265,6 +1271,15 @@ init();
 
 // --- 贾克斯植入的同步逻辑开始 ---
 const GIST_SET_KEY = 'GIST_ID_VAL';
+const GIST_TOKEN_KEY = 'GITHUB_TOKEN_VAL';
+
+function saveGithubToken() {
+    const token = document.getElementById('github-token-input').value.trim();
+    if (!token) { alert('请输入 GitHub Token'); return; }
+    localStorage.setItem(GIST_TOKEN_KEY, token);
+    alert('Token 保存成功！');
+}
+
 function saveGistSetting() {
     const val = document.getElementById('gist-id-input').value.trim();
     localStorage.setItem(GIST_SET_KEY, val);
@@ -1289,6 +1304,41 @@ async function syncFromGist() {
     } catch(err) { alert('同步失败：' + err.message); }
     finally { btn.disabled = false; btn.innerText = oldText; }
 }
+
+// 上传数据到 Gist
+async function uploadToGist(showMsg) {
+    const gistId = localStorage.getItem(GIST_SET_KEY);
+    const token = localStorage.getItem(GIST_TOKEN_KEY);
+    if (!gistId || !token) {
+        if (showMsg !== false) console.log('未配置 Gist ID 或 Token');
+        return;
+    }
+    
+    try {
+        const content = JSON.stringify(workorders, null, 2);
+        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                description: '工单数据同步',
+                files: {
+                    'workorders.json': {
+                        content: content
+                    }
+                }
+            })
+        });
+        
+        if (!res.ok) throw new Error('上传失败');
+        if (showMsg !== false) console.log('云端同步成功');
+    } catch(err) {
+        console.log('云端同步失败:', err.message);
+    }
+}
+
 // --- 贾克斯植入的同步逻辑结束 ---
 </script>
 </body>
