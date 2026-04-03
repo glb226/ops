@@ -54,7 +54,7 @@
         </a>
         <a href="#" onclick="showPage('vendors');return false;" class="d-flex align-items-center gap-2" id="nav-vendors">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span>运维商</span>
+            <span>运维 ?/span>
         </a>
 <a href="#" onclick="showPage('warehouse');return false;" class="d-flex align-items-center gap-2" id="nav-warehouse">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -74,8 +74,7 @@
             <div class="card">
                 <div class="card-header">粘贴工单信息</div>
                 <div class="card-body">
-                    <textarea class="form-control mb-2" id="ai-input" rows="5" placeholder="粘贴工单信息，如：
-报修部门：xxx
+                    <textarea class="form-control mb-2" id="ai-input" rows="5" placeholder="粘贴工单信息，如 ?报修部门：xxx
 报修人及联系电话：xxx 138xxxx
 具体报修项目：xxx"></textarea>
                     <button class="btn btn-primary btn-sm" onclick="analyzeWorkorder()">AI智能分析</button>
@@ -86,12 +85,12 @@
                 <div class="card-body">
                     <div class="row g-2">
                         <div class="col-6"><label class="small text-muted">机构</label><input class="form-control form-control-sm" id="edit-dept"></div>
-                        <div class="col-6"><label class="small text-muted">报修人</label><input class="form-control form-control-sm" id="edit-person"></div>
+                        <div class="col-6"><label class="small text-muted">报修 ?/label><input class="form-control form-control-sm" id="edit-person"></div>
                         <div class="col-6"><label class="small text-muted">电话</label><input class="form-control form-control-sm" id="edit-phone"></div>
                         <div class="col-6"><label class="small text-muted">设备</label><select class="form-select form-select-sm" id="edit-device" onchange="onDeviceChange()">
-                            <option>存取款一体机/ATM</option><option>高速大额存取款机</option><option>回单机/自助终端</option><option>综合版智能柜台</option><option>标准版智能柜台</option><option>网银一体机/LED走字屏</option><option>空调维护</option><option>零星维修</option><option>叫号机/宣传屏</option><option>征信查询机</option><option>安防</option><option>网络设备</option><option>其他</option>
+                            <option>存取款一体机/ATM</option><option>高速大额存取款 ?/option><option>回单 ?自助终端</option><option>综合版智能柜 ?/option><option>标准版智能柜 ?/option><option>网银一体机/LED走字 ?/option><option>空调维护</option><option>零星维修</option><option>叫号 ?宣传 ?/option><option>征信查询 ?/option><option>安防</option><option>网络设备</option><option>其他</option>
                         </select></div>
-                        <div class="col-6"><label class="small text-muted">运维商</label><select class="form-select form-select-sm" id="edit-vendor"></select></div>
+                        <div class="col-6"><label class="small text-muted">运维 ?/label><select class="form-select form-select-sm" id="edit-vendor"></select></div>
                         <div class="col-12"><label class="small text-muted">故障描述</label><input class="form-control form-control-sm" id="edit-desc"></div>
                     </div>
                     <button class="btn btn-success btn-sm mt-2" id="confirm-btn" onclick="confirmCreate()">确认生成工单</button>
@@ -121,17 +120,17 @@
                                 <option value="month">本月</option>
                             </select>
                         </div>
-                        <div class="col-md-2"><label class="small">供应商</label>
+                        <div class="col-md-2"><label class="small">供应 ?/label>
                             <select class="form-select form-select-sm" id="filter-vendor" onchange="renderWorkorders()">
-                                <option value="all">全部供应商</option>
+                                <option value="all">全部供应 ?/option>
                             </select>
                         </div>
-                        <div class="col-md-2"><label class="small">状态</label>
+                        <div class="col-md-2"><label class="small">状 ?/label>
                             <select class="form-select form-select-sm" id="filter-status" onchange="renderWorkorders()">
-                                <option value="all">全部状态</option>
-                                <option value="响应中">响应中</option>
-                                <option value="审批中">审批中</option>
-                                <option value="已完成">已完成</option>
+                                <option value="all">全部状 ?/option>
+                                <option value="响应 ?>响应 ?/option>
+                                <option value="审批 ?>审批 ?/option>
+                                <option value="已完 ?>已完 ?/option>
                             </select>
                         </div>
                         <div class="col-md-3"><label class="small">搜索机构</label>
@@ -148,15 +147,15 @@
             </div>
             <div style="overflow-x:auto">
                 <table class="table table-sm table-hover" id="workorder-table">
-                    <thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>故障</th><th>状态</th><th>运维商</th><th>备注</th><th>创建时间</th><th>完成时间</th><th>操作</th></tr></thead>
+                    <thead><tr><th>工单 ?/th><th>机构</th><th>设备</th><th>故障</th><th>状 ?/th><th>运维 ?/th><th>备注</th><th>创建时间</th><th>完成时间</th><th>操作</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-2">
                 <span class="text-muted small" id="page-info"></span>
                 <div>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">上一页</button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">下一页</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">上一 ?/button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">下一 ?/button>
                 </div>
             </div>
         </div>
@@ -170,41 +169,39 @@
                     <div class="row text-center">
                         <div class="col-4"><div class="text-muted small">本月</div><h5 id="month-total">0</h5></div>
                         <div class="col-4"><div class="text-success small">完成</div><h5 class="text-success" id="month-done">0</h5></div>
-                        <div class="col-4"><div class="text-warning small">未完成</div><h5 class="text-warning clickable-num" id="month-pending" onclick="showPendingDetails()">0</h5></div>
+                        <div class="col-4"><div class="text-warning small">未完 ?/div><h5 class="text-warning clickable-num" id="month-pending" onclick="showPendingDetails()">0</h5></div>
                         <div class="col-4 mt-2"><div class="text-muted small">本周</div><h5 id="week-total">0</h5></div>
                         <div class="col-4 mt-2"><div class="text-success small">完成</div><h5 class="text-success" id="week-done">0</h5></div>
-                        <div class="col-4 mt-2"><div class="text-warning small">未完成</div><h5 class="text-warning clickable-num" id="week-pending" onclick="showPendingDetails()">0</h5></div>
+                        <div class="col-4 mt-2"><div class="text-warning small">未完 ?/div><h5 class="text-warning clickable-num" id="week-pending" onclick="showPendingDetails()">0</h5></div>
                     </div>
                     <div class="text-center mt-2 border-top pt-2"><span class="text-muted">平均响应:</span> <strong id="avg-response">0h</strong></div>
                 </div>
             </div>
             <div class="row">
-                <div class="col-12 col-md-6 mb-2"><div class="card"><div class="card-body p-2"><h6>供应商工单分布</h6><div class="chart-container"><canvas id="chart-vendor"></canvas></div></div></div></div>
-                <div class="col-12 col-md-6 mb-2"><div class="card"><div class="card-body p-2"><h6>供应商响应时长(小时)</h6><div class="chart-container"><canvas id="chart-response"></canvas></div></div></div></div>
+                <div class="col-12 col-md-6 mb-2"><div class="card"><div class="card-body p-2"><h6>供应商工单分 ?/h6><div class="chart-container"><canvas id="chart-vendor"></canvas></div></div></div></div>
+                <div class="col-12 col-md-6 mb-2"><div class="card"><div class="card-body p-2"><h6>供应商响应时 ?小时)</h6><div class="chart-container"><canvas id="chart-response"></canvas></div></div></div></div>
             </div>
         </div>
         <div id="page-vendors" style="display:none;">
             <div class="page-title d-flex align-items-center gap-2">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                运维商
-            </div>
+                运维 ?            </div>
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center"><span>运维商列表</span><button class="btn btn-primary btn-sm" onclick="showVendorModal()">新增</button></div>
-                <table class="table table-sm mb-0" id="vendor-table"><thead><tr><th>设备</th><th>运维商</th><th>联系人</th><th>电话</th><th>操作</th></tr></thead><tbody></tbody></table>
+                <div class="card-header d-flex justify-content-between align-items-center"><span>运维商列 ?/span><button class="btn btn-primary btn-sm" onclick="showVendorModal()">新增</button></div>
+                <table class="table table-sm mb-0" id="vendor-table"><thead><tr><th>设备</th><th>运维 ?/th><th>联系 ?/th><th>电话</th><th>操作</th></tr></thead><tbody></tbody></table>
             </div>
         </div>
                 <!-- [New] 系统设置页面 -->
         <div id="page-settings" style="display:none;">
-            <div class="page-title">系统设置 (贾克斯信箱配置)</div>
+            <div class="page-title">系统设置 (贾克斯信箱配 ?</div>
             <div class="card p-4">
                 <label class="small fw-bold mb-2">GitHub Token</label>
                 <input type="password" class="form-control mb-3" id="github-token-input" placeholder="输入 GitHub Token (ghp_xxx)">
                 <button class="btn btn-primary btn-sm mb-3" onclick="saveGithubToken()">保存 Token</button>
                 <hr>
-                <label class="small fw-bold mb-2">GitHub Gist ID</label>
-                <input type="text" class="form-control mb-3" id="gist-id-input" placeholder="输入 32 位 ID">
-                <button class="btn btn-primary btn-sm" onclick="saveGistSetting()">保存配置</button>
-                <div class="form-text mt-2">填入 <b>6ae766bcc9cb000bbda0006debc06ef3</b> 连通贾克斯信箱。</div>
+                <div class="alert alert-info small mb-3">
+                    <strong>云端数据源已配置 ?/strong> Gist ID: <code>9ae11536cf7304baed38841a47c39385</code>
+                </div>
             </div>
         </div>
 <!-- 仓储管理页面 -->
@@ -239,7 +236,7 @@
                                         <option value="其它设备">其它设备</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3"><label class="small">出入库类型</label>
+                                <div class="col-md-3"><label class="small">出入库类 ?/label>
                                     <select class="form-select form-select-sm" id="wh-filter-io" onchange="renderWarehouse()">
                                         <option value="">全部</option>
                                         <option value="入库">入库</option>
@@ -261,7 +258,7 @@
                     </div>
                     <div style="overflow-x:auto">
                         <table class="table table-sm table-hover">
-                            <thead><tr><th>序号</th><th>时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th><th>状态变更</th><th>操作</th></tr></thead>
+                            <thead><tr><th>序号</th><th>时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th><th>状态变 ?/th><th>操作</th></tr></thead>
                             <tbody id="warehouse-table"></tbody>
                         </table>
                     </div>
@@ -276,7 +273,7 @@
                         <div class="card-header">仓储费用统计</div>
                         <div class="card-body">
                             <div class="row g-2 mb-2 align-items-end">
-                                <div class="col-md-3"><label class="small">开始月份</label>
+                                <div class="col-md-3"><label class="small">开始月 ?/label>
                                     <input type="month" class="form-control form-control-sm" id="sf-month-start">
                                 </div>
                                 <div class="col-md-3"><label class="small">结束月份</label>
@@ -287,7 +284,7 @@
                                 </div>
                             </div>
                             <table class="table table-sm table-bordered" id="storage-fee-table">
-                                <thead class="table-light"><tr><th style="text-align:center">年月</th><th>货物类型</th><th>单价(元/月)</th><th>在库数量(台)</th><th>费用(元)</th></tr></thead>
+                                <thead class="table-light"><tr><th style="text-align:center">年月</th><th>货物类型</th><th>单价( ? ?</th><th>在库数量( ?</th><th>费用( ?</th></tr></thead>
                                 <tbody id="storage-fee-tbody"></tbody>
                                 <tfoot><tr class="table-secondary"><td style="text-align:center" class="fw-bold">合计</td><td colspan="2"></td><td id="sf-total-qty">0</td><td id="sf-total-fee">0</td></tr></tfoot>
                             </table>
@@ -316,16 +313,16 @@
 
 <!-- 运维商编辑modal -->
 <div class="modal fade" id="vendorModal"><div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header"><h6 class="modal-title" id="vmodal-title">编辑运维商</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-header"><h6 class="modal-title" id="vmodal-title">编辑运维 ?/h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
         <input type="hidden" id="v-index">
         <div class="mb-2"><label class="small">设备类型</label>
             <select class="form-select form-select-sm" id="v-type">
-                <option>存取款一体机/ATM</option><option>高速大额存取款机</option><option>回单机/自助终端</option><option>综合版智能柜台</option><option>标准版智能柜台</option><option>网银一体机/LED走字屏</option><option>空调维护</option><option>零星维修</option><option>叫号机/宣传屏</option><option>征信查询机</option><option>安防</option><option>网络设备</option><option>其他</option>
+                <option>存取款一体机/ATM</option><option>高速大额存取款 ?/option><option>回单 ?自助终端</option><option>综合版智能柜 ?/option><option>标准版智能柜 ?/option><option>网银一体机/LED走字 ?/option><option>空调维护</option><option>零星维修</option><option>叫号 ?宣传 ?/option><option>征信查询 ?/option><option>安防</option><option>网络设备</option><option>其他</option>
             </select>
         </div>
-        <div class="mb-2"><label class="small">运维商</label><input type="text" class="form-control form-control-sm" id="v-vendor"></div>
-        <div class="mb-2"><label class="small">联系人</label><input type="text" class="form-control form-control-sm" id="v-contact"></div>
+        <div class="mb-2"><label class="small">运维 ?/label><input type="text" class="form-control form-control-sm" id="v-vendor"></div>
+        <div class="mb-2"><label class="small">联系 ?/label><input type="text" class="form-control form-control-sm" id="v-contact"></div>
         <div class="mb-2"><label class="small">电话</label><input type="text" class="form-control form-control-sm" id="v-phone"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveVendor()">保存</button></div>
@@ -382,18 +379,18 @@
 </div></div></div>
 
 <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js">
-// --- 贾克斯植入的同步逻辑开始 ---
+// --- 贾克斯植入的同步逻辑开 ?---
 const GIST_SET_KEY = 'GIST_ID_VAL';
 function saveGistSetting() {
     const val = document.getElementById('gist-id-input').value.trim();
     localStorage.setItem(GIST_SET_KEY, val);
-    alert('配置已完成！请回工单管理点击同步。');
+    alert('配置已完成！请回工单管理点击同步 ?);
     showPage('workorders');
 }
 
 async function syncFromGist() {
-    const gistId = localStorage.getItem(GIST_SET_KEY);
-    if(!gistId) { alert('请先在“系统设置”配置 Gist ID'); return; }
+    const gistId = FIXED_GIST_ID;
+    if(!gistId) { alert('请先在“系统设置”配 ?Gist ID'); return; }
     const btn = document.querySelector('button[onclick="syncFromGist()"]');
     const oldText = btn.innerText;
     btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
@@ -405,24 +402,24 @@ async function syncFromGist() {
         saveWorkorders();
         renderWorkorders();
         alert('🎉 同步完毕，加载成功！');
-    } catch(err) { alert('同步失败：' + err.message); }
+    } catch(err) { alert('同步失败 ? + err.message); }
     finally { btn.disabled = false; btn.innerText = oldText; }
 }
 // --- 贾克斯植入的同步逻辑结束 ---
 </script>
 <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
-// --- 贾克斯植入的同步逻辑开始 ---
+// --- 贾克斯植入的同步逻辑开 ?---
 const GIST_SET_KEY = 'GIST_ID_VAL';
 function saveGistSetting() {
     const val = document.getElementById('gist-id-input').value.trim();
     localStorage.setItem(GIST_SET_KEY, val);
-    alert('配置已完成！请回工单管理点击同步。');
+    alert('配置已完成！请回工单管理点击同步 ?);
     showPage('workorders');
 }
 
 async function syncFromGist() {
-    const gistId = localStorage.getItem(GIST_SET_KEY);
-    if(!gistId) { alert('请先在“系统设置”配置 Gist ID'); return; }
+    const gistId = FIXED_GIST_ID;
+    if(!gistId) { alert('请先在“系统设置”配 ?Gist ID'); return; }
     const btn = document.querySelector('button[onclick="syncFromGist()"]');
     const oldText = btn.innerText;
     btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
@@ -434,24 +431,24 @@ async function syncFromGist() {
         saveWorkorders();
         renderWorkorders();
         alert('🎉 同步完毕，加载成功！');
-    } catch(err) { alert('同步失败：' + err.message); }
+    } catch(err) { alert('同步失败 ? + err.message); }
     finally { btn.disabled = false; btn.innerText = oldText; }
 }
 // --- 贾克斯植入的同步逻辑结束 ---
 </script>
 <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-// --- 贾克斯植入的同步逻辑开始 ---
+// --- 贾克斯植入的同步逻辑开 ?---
 const GIST_SET_KEY = 'GIST_ID_VAL';
 function saveGistSetting() {
     const val = document.getElementById('gist-id-input').value.trim();
     localStorage.setItem(GIST_SET_KEY, val);
-    alert('配置已完成！请回工单管理点击同步。');
+    alert('配置已完成！请回工单管理点击同步 ?);
     showPage('workorders');
 }
 
 async function syncFromGist() {
-    const gistId = localStorage.getItem(GIST_SET_KEY);
-    if(!gistId) { alert('请先在“系统设置”配置 Gist ID'); return; }
+    const gistId = FIXED_GIST_ID;
+    if(!gistId) { alert('请先在“系统设置”配 ?Gist ID'); return; }
     const btn = document.querySelector('button[onclick="syncFromGist()"]');
     const oldText = btn.innerText;
     btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
@@ -463,7 +460,7 @@ async function syncFromGist() {
         saveWorkorders();
         renderWorkorders();
         alert('🎉 同步完毕，加载成功！');
-    } catch(err) { alert('同步失败：' + err.message); }
+    } catch(err) { alert('同步失败 ? + err.message); }
     finally { btn.disabled = false; btn.innerText = oldText; }
 }
 // --- 贾克斯植入的同步逻辑结束 ---
@@ -477,44 +474,43 @@ let chartVendor = null, chartResponse = null;
 
 // 设备-供应商映射表
 const deviceVendorMap = {
-    '存取款一体机/ATM': '广东奔腾达电子有限公司',
-    '高速大额存取款机': '广东奔腾达电子有限公司',
-    '回单机/自助终端': '广州南天电脑系统有限公司',
-    '综合版智能柜台': '广西百鼎科技有限责任公司',
-    '标准版智能柜台': '广东奔腾达电子有限公司',
-    '网银一体机/LED走字屏': '广西佳仕运网络科技有限公司',
+    '存取款一体机/ATM': '广东奔腾达电子有限公 ?,
+    '高速大额存取款 ?: '广东奔腾达电子有限公 ?,
+    '回单 ?自助终端': '广州南天电脑系统有限公司',
+    '综合版智能柜 ?: '广西百鼎科技有限责任公司',
+    '标准版智能柜 ?: '广东奔腾达电子有限公 ?,
+    '网银一体机/LED走字 ?: '广西佳仕运网络科技有限公司',
     '空调维护': '广西南宁市源申隆贸易有限公司',
     '零星维修': '广西三弦建设工程有限公司',
-    '叫号机/宣传屏': '桂林宇峰电子科技有限公司',
-    '征信查询机': '北京信立合创信息技术有限公司',
+    '叫号 ?宣传 ?: '桂林宇峰电子科技有限公司',
+    '征信查询 ?: '北京信立合创信息技术有限公 ?,
     '安防': '其他',
     '网络设备': '其他',
     '其他': '其他'
 };
 
 const vendors = [
-    {type:'存取款一体机/ATM',vendor:'广东奔腾达电子有限公司',contact:'周洪商/韩东',phone:'18176252256'},
-    {type:'高速大额存取款机',vendor:'广东奔腾达电子有限公司',contact:'韩东',phone:'18178601382'},
-    {type:'回单机/自助终端',vendor:'广州南天电脑系统有限公司',contact:'梁太鑫',phone:'13877130518'},
-    {type:'综合版智能柜台',vendor:'广西百鼎科技有限责任公司',contact:'莫德文',phone:'18278387986'},
-    {type:'标准版智能柜台',vendor:'广东奔腾达电子有限公司',contact:'肖俊宏',phone:'13878748626'},
-    {type:'网银一体机/LED走字屏',vendor:'广西佳仕运网络科技有限公司',contact:'陈剑峰',phone:'13977300180'},
-    {type:'空调维护',vendor:'广西南宁市源申隆贸易有限公司',contact:'陈国文',phone:'19077164249'},
-    {type:'零星维修',vendor:'广西三弦建设工程有限公司',contact:'曾海龙',phone:'13407718924'},
-    {type:'叫号机/宣传屏',vendor:'桂林宇峰电子科技有限公司',contact:'唐孝红',phone:'18178357885'},
-    {type:'征信查询机',vendor:'北京信立合创信息技术有限公司',contact:'谭因金',phone:'13878372640'},
+    {type:'存取款一体机/ATM',vendor:'广东奔腾达电子有限公 ?,contact:'周洪 ?韩东',phone:'18176252256'},
+    {type:'高速大额存取款 ?,vendor:'广东奔腾达电子有限公 ?,contact:'韩东',phone:'18178601382'},
+    {type:'回单 ?自助终端',vendor:'广州南天电脑系统有限公司',contact:'梁太 ?,phone:'13877130518'},
+    {type:'综合版智能柜 ?,vendor:'广西百鼎科技有限责任公司',contact:'莫德 ?,phone:'18278387986'},
+    {type:'标准版智能柜 ?,vendor:'广东奔腾达电子有限公 ?,contact:'肖俊 ?,phone:'13878748626'},
+    {type:'网银一体机/LED走字 ?,vendor:'广西佳仕运网络科技有限公司',contact:'陈剑 ?,phone:'13977300180'},
+    {type:'空调维护',vendor:'广西南宁市源申隆贸易有限公司',contact:'陈国 ?,phone:'19077164249'},
+    {type:'零星维修',vendor:'广西三弦建设工程有限公司',contact:'曾海 ?,phone:'13407718924'},
+    {type:'叫号 ?宣传 ?,vendor:'桂林宇峰电子科技有限公司',contact:'唐孝 ?,phone:'18178357885'},
+    {type:'征信查询 ?,vendor:'北京信立合创信息技术有限公 ?,contact:'谭因 ?,phone:'13878372640'},
     {type:'安防',vendor:'其他',contact:'',phone:''},
     {type:'网络设备',vendor:'其他',contact:'',phone:''},
     {type:'其他',vendor:'其他',contact:'',phone:''}
 ];
 
 // ==================== 仓储管理配置 ====================
-// 货物名称与类型映射（根据附件1整理）
-const WH_NAME_MAP = {
-    '现金自助设备': ['OKI存取款机', 'OKI大堂ATM', '奔腾达零钞机', '大额存取款机', '东信取款机', '广电ATM', '日立存取款机'],
-    '自助设备': ['VR一体机', '壁挂式燃气机', '穿墙式燃气机', '存折机', '发卡机', '回单机', '火车售票机', '立式燃气机', '立式网银机', '照片机', '智能柜台'],
+// 货物名称与类型映射（根据附件1整理 ?const WH_NAME_MAP = {
+    '现金自助设备': ['OKI存取款机', 'OKI大堂ATM', '奔腾达零钞机', '大额存取款机', '东信取款 ?, '广电ATM', '日立存取款机'],
+    '自助设备': ['VR一体机', '壁挂式燃气机', '穿墙式燃气机', '存折 ?, '发卡 ?, '回单 ?, '火车售票 ?, '立式燃气 ?, '立式网银 ?, '照片 ?, '智能柜台'],
     '大型设备': ['空调外机', '其他'],
-    '其它设备': ['壁挂式空调', '其他']
+    '其它设备': ['壁挂式空 ?, '其他']
 };
 
 // 货物类型单价配置（元/月）
@@ -550,7 +546,7 @@ function init() {
     setInterval(function() {
         saveWorkorders();
         saveWarehouseRecords();
-        console.log('数据已自动保存: ' + new Date().toLocaleString());
+        console.log('数据已自动保 ? ' + new Date().toLocaleString());
     }, 30 * 60 * 1000);
 }
 
@@ -572,7 +568,7 @@ function getVendorNames() {
 
 function updateVendorFilter() {
     const sel = document.getElementById('filter-vendor');
-    var html = '<option value="all">全部供应商</option>';
+    var html = '<option value="all">全部供应 ?/option>';
     getVendorNames().forEach(function(v) {
         html += '<option value="'+v+'">'+v+'</option>';
     });
@@ -597,42 +593,42 @@ function onDeviceChange() {
 
 function detectDevice(text) {
     var t = text.toUpperCase();
-    if (t.indexOf('ATM') >= 0 || t.indexOf('取款机') >= 0 || t.indexOf('存取款') >= 0) return '存取款一体机/ATM';
-    if (t.indexOf('高速') >= 0 && t.indexOf('大额') >= 0) return '高速大额存取款机';
-    if (t.indexOf('回单') >= 0 || t.indexOf('自助终端') >= 0) return '回单机/自助终端';
-    if (t.indexOf('综合版') >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '综合版智能柜台';
-    if (t.indexOf('标准版') >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '标准版智能柜台';
-    if (t.indexOf('LED') >= 0 || t.indexOf('走字屏') >= 0 || t.indexOf('显示屏') >= 0) return '网银一体机/LED走字屏';
+    if (t.indexOf('ATM') >= 0 || t.indexOf('取款 ?) >= 0 || t.indexOf('存取 ?) >= 0) return '存取款一体机/ATM';
+    if (t.indexOf('高 ?) >= 0 && t.indexOf('大额') >= 0) return '高速大额存取款 ?;
+    if (t.indexOf('回单') >= 0 || t.indexOf('自助终端') >= 0) return '回单 ?自助终端';
+    if (t.indexOf('综合 ?) >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '综合版智能柜 ?;
+    if (t.indexOf('标准 ?) >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '标准版智能柜 ?;
+    if (t.indexOf('LED') >= 0 || t.indexOf('走字 ?) >= 0 || t.indexOf('显示 ?) >= 0) return '网银一体机/LED走字 ?;
     if (t.indexOf('空调') >= 0) return '空调维护';
-    if (t.indexOf('叫号') >= 0 || t.indexOf('宣传屏') >= 0 || t.indexOf('排队机') >= 0) return '叫号机/宣传屏';
-    if (t.indexOf('征信') >= 0 || t.indexOf('查询机') >= 0) return '征信查询机';
-    if ((t.indexOf('安防') >= 0 || t.indexOf('监控') >= 0 || t.indexOf('摄像头') >= 0) && t.indexOf('锁') < 0 && t.indexOf('门') < 0) return '安防';
-    if ((t.indexOf('网络') >= 0 || t.indexOf('路由器') >= 0 || t.indexOf('交换机') >= 0 || t.indexOf('网线') >= 0 || t.indexOf('电脑') >= 0 || t.indexOf('电话') >= 0 || t.indexOf('计算机') >= 0 || t.indexOf('笔记本') >= 0 || t.indexOf('PC') >= 0 || t.indexOf('服务器') >= 0 || t.indexOf('打印机') >= 0 || t.indexOf('WIFI') >= 0 || t.indexOf('WI-FI') >= 0 || t.indexOf('键盘') >= 0 || t.indexOf('死机') >= 0) && t.indexOf('锁') < 0 && t.indexOf('门') < 0) return '网络设备';
-    if (t.indexOf('零星') >= 0 || t.indexOf('锁') >= 0 || t.indexOf('门') >= 0 || t.indexOf('墙面') >= 0 || t.indexOf('水电') >= 0 || t.indexOf('灯具') >= 0 || t.indexOf('桌椅') >= 0 || t.indexOf('上锁') >= 0 || t.indexOf('开锁') >= 0 || t.indexOf('门禁') >= 0 || t.indexOf('电子锁') >= 0 || (t.indexOf('维修') >= 0 && t.indexOf('网络') < 0 && t.indexOf('电话') < 0 && t.indexOf('电脑') < 0 && t.indexOf('笔记本') < 0 && t.indexOf('空调') < 0 && t.indexOf('键盘') < 0)) return '零星维修';
+    if (t.indexOf('叫号') >= 0 || t.indexOf('宣传 ?) >= 0 || t.indexOf('排队 ?) >= 0) return '叫号 ?宣传 ?;
+    if (t.indexOf('征信') >= 0 || t.indexOf('查询 ?) >= 0) return '征信查询 ?;
+    if ((t.indexOf('安防') >= 0 || t.indexOf('监控') >= 0 || t.indexOf('摄像 ?) >= 0) && t.indexOf(' ?) < 0 && t.indexOf(' ?) < 0) return '安防';
+    if ((t.indexOf('网络') >= 0 || t.indexOf('路由 ?) >= 0 || t.indexOf('交换 ?) >= 0 || t.indexOf('网线') >= 0 || t.indexOf('电脑') >= 0 || t.indexOf('电话') >= 0 || t.indexOf('计算 ?) >= 0 || t.indexOf('笔记 ?) >= 0 || t.indexOf('PC') >= 0 || t.indexOf('服务 ?) >= 0 || t.indexOf('打印 ?) >= 0 || t.indexOf('WIFI') >= 0 || t.indexOf('WI-FI') >= 0 || t.indexOf('键盘') >= 0 || t.indexOf('死机') >= 0) && t.indexOf(' ?) < 0 && t.indexOf(' ?) < 0) return '网络设备';
+    if (t.indexOf('零星') >= 0 || t.indexOf(' ?) >= 0 || t.indexOf(' ?) >= 0 || t.indexOf('墙面') >= 0 || t.indexOf('水电') >= 0 || t.indexOf('灯具') >= 0 || t.indexOf('桌椅') >= 0 || t.indexOf('上锁') >= 0 || t.indexOf('开 ?) >= 0 || t.indexOf('门禁') >= 0 || t.indexOf('电子 ?) >= 0 || (t.indexOf('维修') >= 0 && t.indexOf('网络') < 0 && t.indexOf('电话') < 0 && t.indexOf('电脑') < 0 && t.indexOf('笔记 ?) < 0 && t.indexOf('空调') < 0 && t.indexOf('键盘') < 0)) return '零星维修';
     return '其他';
 }
 
 function analyzeWorkorder() {
     var i = document.getElementById('ai-input').value;
-    if (!i.trim()) { alert('请输入工单信息'); return; }
+    if (!i.trim()) { alert('请输入工单信 ?); return; }
     var dept='', person='', phone='', device='其他', desc='';
-    var dm = i.match(/报修部门[：:]\s*(.+?)(?:\n|$)/);
+    var dm = i.match(/报修部门[ ?]\s*(.+?)(?:\n|$)/);
     if (dm) dept = dm[1].trim();
-    if (!dept) { var dm2 = i.match(/机构[：:]\s*(.+?)(?:\n|$)/); if (dm2) dept = dm2[1].trim(); }
-    var pm = i.match(/报修人[及和]*联系电话?[：:]?\s*(.+?)(?:\n|$)/);
+    if (!dept) { var dm2 = i.match(/机构[ ?]\s*(.+?)(?:\n|$)/); if (dm2) dept = dm2[1].trim(); }
+    var pm = i.match(/报修人[及和]*联系电话?[ ?]?\s*(.+?)(?:\n|$)/);
     if (pm) {
         var pp = pm[1].trim();
         var ppClean = pp.replace(/\s+/g, '');
         var m = ppClean.match(/(\d{11})/);
-        if (m) { phone = m[1]; person = pp.replace(/\s+/g, '').replace(/\d{11}/, '').replace(/[，。、:：()（）【】]/g, '').trim(); }
+        if (m) { phone = m[1]; person = pp.replace(/\s+/g, '').replace(/\d{11}/, '').replace(/[，。 ? ?)（）【】]/g, '').trim(); }
         else { person = pp; }
     }
     if (!phone) { var allText = i.replace(/\s+/g, ''); var m2 = allText.match(/(\d{11})/); if (m2) phone = m2[1]; }
-    var d2 = i.match(/具体报修项目[：:]\s*(.+?)(?:\n|$)/);
+    var d2 = i.match(/具体报修项目[ ?]\s*(.+?)(?:\n|$)/);
     if (d2) desc = d2[1].trim();
-    if (!desc) { var d3 = i.match(/故障描述[：:]\s*(.+?)(?:\n|$)/); if (d3) desc = d3[1].trim(); }
-    if (!desc) { var d4 = i.match(/故障[：:]\s*(.+?)(?:\n|$)/i); if (d4) desc = d4[1].trim(); }
-    if (!desc) { var lines = i.split('\n'); for (var j = lines.length - 1; j >= 0; j--) { var line = lines[j].trim(); if (line && !line.match(/^[报修机构人电话]/) && line.length > 5) { desc = line.replace(/^[^：:]+[：:]\s*/, '').trim(); break; } } }
+    if (!desc) { var d3 = i.match(/故障描述[ ?]\s*(.+?)(?:\n|$)/); if (d3) desc = d3[1].trim(); }
+    if (!desc) { var d4 = i.match(/故障[ ?]\s*(.+?)(?:\n|$)/i); if (d4) desc = d4[1].trim(); }
+    if (!desc) { var lines = i.split('\n'); for (var j = lines.length - 1; j >= 0; j--) { var line = lines[j].trim(); if (line && !line.match(/^[报修机构人电话]/) && line.length > 5) { desc = line.replace(/^[^ ?]+[ ?]\s*/, '').trim(); break; } } }
     device = detectDevice(i);
     document.getElementById('edit-dept').value = dept || '';
     document.getElementById('edit-person').value = person || '';
@@ -647,7 +643,7 @@ function analyzeWorkorder() {
 function confirmCreate() {
     var btn = document.getElementById('confirm-btn');
     btn.disabled = true;
-    btn.textContent = '创建中...';
+    btn.textContent = '创建 ?..';
     setTimeout(function() {
         var order = {
             id: generateOrderNo(),
@@ -658,7 +654,7 @@ function confirmCreate() {
             description: document.getElementById('edit-desc').value,
             vendor: document.getElementById('edit-vendor').value,
             remark: '',
-            status: '响应中',
+            status: '响应 ?,
             create_time: new Date().toISOString(),
             complete_time: null
         };
@@ -670,7 +666,7 @@ function confirmCreate() {
         renderDashboard();
         document.getElementById('analysis-result').style.display = 'none';
         document.getElementById('ai-input').value = '';
-        document.getElementById('success-content').innerHTML = '<p>工单号：<strong>'+order.id+'</strong></p><p>机构：'+order.dept+'</p><p>设备：'+order.device+'</p><p>运维商：'+order.vendor+'</p><p>状态：'+order.status+'</p>';
+        document.getElementById('success-content').innerHTML = '<p>工单号：<strong>'+order.id+'</strong></p><p>机构 ?+order.dept+'</p><p>设备 ?+order.device+'</p><p>运维商：'+order.vendor+'</p><p>状态：'+order.status+'</p>';
         document.getElementById('success-result').style.display = 'block';
         btn.disabled = false;
         btn.textContent = '确认生成工单';
@@ -678,10 +674,10 @@ function confirmCreate() {
 }
 
 function deleteWorkorder(id) {
-    if (!confirm('确定删除此工单?')) return;
+    if (!confirm('确定删除此工 ?')) return;
     workorders = workorders.filter(function(o) { return o.id !== id; });
     saveWorkorders();
-    uploadToGist();
+    uploadToGist(true);
     renderWorkorders();
     renderDashboard();
 }
@@ -721,36 +717,36 @@ function renderWorkorders() {
     pageData.forEach(function(o) {
         var ct = new Date(o.create_time);
         var descShort = (o.description || '').substring(0, 15);
-        var statusColor = o.status === '响应中' ? '#007bff' : o.status === '审批中' ? '#6f42c1' : '#28a745';
+        var statusColor = o.status === '响应 ? ? '#007bff' : o.status === '审批 ? ? '#6f42c1' : '#28a745';
         var completeTime = o.complete_time ? new Date(o.complete_time).toLocaleString() : '-';
-        html += '<tr><td style="font-size:12px;white-space:nowrap">'+o.id+'</td><td style="font-size:12px;white-space:nowrap">'+(o.dept||'')+'</td><td style="font-size:12px;white-space:nowrap">'+(o.device||'')+'</td><td style="font-size:12px;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis"><a href="javascript:void(0)" onclick="showOrderDetail(\''+o.id+'\')" title="'+(o.description||'')+'">'+descShort+'</a></td><td style="white-space:nowrap"><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px;white-space:nowrap">'+(o.vendor||'-')+'</td><td style="max-width:80px;overflow:hidden"><input type="text" class="form-control form-control-sm" value="'+(o.remark||'')+'" placeholder="备注" onchange="updateRemark(\''+o.id+'\', this.value)" style="width:100%;font-size:12px;padding:2px;height:24px;"></td><td style="font-size:12px;white-space:nowrap">'+ct.toLocaleDateString()+'</td><td style="font-size:12px;white-space:nowrap;color:'+(o.status==='已完成'?'#28a745':'#999')+'">'+completeTime+'</td><td style="white-space:nowrap"><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
+        html += '<tr><td style="font-size:12px;white-space:nowrap">'+o.id+'</td><td style="font-size:12px;white-space:nowrap">'+(o.dept||'')+'</td><td style="font-size:12px;white-space:nowrap">'+(o.device||'')+'</td><td style="font-size:12px;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis"><a href="javascript:void(0)" onclick="showOrderDetail(\''+o.id+'\')" title="'+(o.description||'')+'">'+descShort+'</a></td><td style="white-space:nowrap"><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应 ?'+(o.status==='响应 ??' selected':'')+'>响应 ?/option><option value="审批 ?'+(o.status==='审批 ??' selected':'')+'>审批 ?/option><option value="已完 ?'+(o.status==='已完 ??' selected':'')+'>已完 ?/option></select></td><td style="font-size:12px;white-space:nowrap">'+(o.vendor||'-')+'</td><td style="max-width:80px;overflow:hidden"><input type="text" class="form-control form-control-sm" value="'+(o.remark||'')+'" placeholder="备注" onchange="updateRemark(\''+o.id+'\', this.value)" style="width:100%;font-size:12px;padding:2px;height:24px;"></td><td style="font-size:12px;white-space:nowrap">'+ct.toLocaleDateString()+'</td><td style="font-size:12px;white-space:nowrap;color:'+(o.status==='已完 ??'#28a745':'#999')+'">'+completeTime+'</td><td style="white-space:nowrap"><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
     });
     document.querySelector('#workorder-table tbody').innerHTML = html;
-    document.getElementById('page-info').textContent = '共' + filtered.length + '条 第' + currentPage + '/' + totalPages + '页';
+    document.getElementById('page-info').textContent = ' ? + filtered.length + ' ? ? + currentPage + '/' + totalPages + ' ?;
 }
 
 function updateStatus(id, status) {
     var order = workorders.find(function(o) { return o.id === id; });
-    if (order) { order.status = status; if (status === '已完成') order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); uploadToGist(); renderDashboard(); }
+    if (order) { order.status = status; if (status === '已完 ?) order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); uploadToGist(true); renderDashboard(); }
 }
 
 function updateRemark(id, remark) {
     var order = workorders.find(function(o) { return o.id === id; });
-    if (order) { order.remark = remark; saveWorkorders(); uploadToGist(); }
+    if (order) { order.remark = remark; saveWorkorders(); uploadToGist(true); }
 }
 
 function showOrderDetail(id) {
     var order = workorders.find(function(o) { return o.id === id; });
     if (!order) return;
-    var detail = '<table class="table table-sm"><tr><td style="width:80px;font-weight:bold">工单号</td><td>'+order.id+'</td></tr>';
+    var detail = '<table class="table table-sm"><tr><td style="width:80px;font-weight:bold">工单 ?/td><td>'+order.id+'</td></tr>';
     detail += '<tr><td style="font-weight:bold">机构</td><td>'+(order.dept||'')+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">报修人</td><td>'+(order.person||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">报修 ?/td><td>'+(order.person||'')+'</td></tr>';
     detail += '<tr><td style="font-weight:bold">电话</td><td>'+(order.phone||'')+'</td></tr>';
     detail += '<tr><td style="font-weight:bold">设备</td><td>'+(order.device||'')+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">运维商</td><td>'+(order.vendor||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">运维 ?/td><td>'+(order.vendor||'')+'</td></tr>';
     detail += '<tr><td style="font-weight:bold">故障描述</td><td style="word-break:break-all">'+(order.description||'')+'</td></tr>';
     detail += '<tr><td style="font-weight:bold">备注</td><td style="word-break:break-all">'+(order.remark||'')+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">状态</td><td>'+(order.status||'')+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">状 ?/td><td>'+(order.status||'')+'</td></tr>';
     detail += '<tr><td style="font-weight:bold">创建时间</td><td>'+new Date(order.create_time).toLocaleString()+'</td></tr>';
     if (order.complete_time) {
         detail += '<tr><td style="font-weight:bold">完成时间</td><td>'+new Date(order.complete_time).toLocaleString()+'</td></tr>';
@@ -768,20 +764,20 @@ function changePage(delta) {
 }
 
 function showPendingDetails() {
-    var pending = workorders.filter(function(o) { return o.status !== '已完成'; });
+    var pending = workorders.filter(function(o) { return o.status !== '已完 ?; });
     var now = new Date();
     pending.sort(function(a, b) { return (now - new Date(a.create_time)) - (now - new Date(b.create_time)); });
     var html = '';
     if (pending.length > 0) {
-        html = '<table class="table table-sm"><thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>故障描述</th><th>创建时间</th><th>时长</th></tr></thead><tbody>';
+        html = '<table class="table table-sm"><thead><tr><th>工单 ?/th><th>机构</th><th>设备</th><th>故障描述</th><th>创建时间</th><th>时长</th></tr></thead><tbody>';
         pending.forEach(function(o) {
             var days = Math.floor((now - new Date(o.create_time)) / 86400000);
             var hours = Math.floor(((now - new Date(o.create_time)) % 86400000) / 3600000);
-            var duration = days > 0 ? days + '天' + hours + '小时' : hours + '小时';
+            var duration = days > 0 ? days + ' ? + hours + '小时' : hours + '小时';
             html += '<tr><td>'+o.id+'</td><td>'+o.dept+'</td><td>'+o.device+'</td><td title="'+(o.description||'')+'">'+(o.description||'').substring(0,20)+'</td><td>'+new Date(o.create_time).toLocaleString()+'</td><td><strong>'+duration+'</strong></td></tr>';
         });
         html += '</tbody></table>';
-    } else { html = '<p class="text-center text-muted">暂无未完成工单</p>'; }
+    } else { html = '<p class="text-center text-muted">暂无未完成工 ?/p>'; }
     document.getElementById('pending-content').innerHTML = html;
     new bootstrap.Modal(document.getElementById('pendingModal')).show();
 }
@@ -793,12 +789,12 @@ function renderDashboard() {
     var mo = workorders.filter(function(o) { return new Date(o.create_time) >= monthStart; });
     var wo = workorders.filter(function(o) { return new Date(o.create_time) >= weekAgo; });
     document.getElementById('month-total').textContent = mo.length;
-    document.getElementById('month-done').textContent = mo.filter(function(o) { return o.status === '已完成'; }).length;
-    document.getElementById('month-pending').textContent = mo.filter(function(o) { return o.status !== '已完成'; }).length;
+    document.getElementById('month-done').textContent = mo.filter(function(o) { return o.status === '已完 ?; }).length;
+    document.getElementById('month-pending').textContent = mo.filter(function(o) { return o.status !== '已完 ?; }).length;
     document.getElementById('week-total').textContent = wo.length;
-    document.getElementById('week-done').textContent = wo.filter(function(o) { return o.status === '已完成'; }).length;
-    document.getElementById('week-pending').textContent = wo.filter(function(o) { return o.status !== '已完成'; }).length;
-    var done = workorders.filter(function(o) { return o.status === '已完成' && o.complete_time; });
+    document.getElementById('week-done').textContent = wo.filter(function(o) { return o.status === '已完 ?; }).length;
+    document.getElementById('week-pending').textContent = wo.filter(function(o) { return o.status !== '已完 ?; }).length;
+    var done = workorders.filter(function(o) { return o.status === '已完 ? && o.complete_time; });
     if (done.length > 0) {
         var total = 0;
         done.forEach(function(o) { total += new Date(o.complete_time).getTime() - new Date(o.create_time).getTime(); });
@@ -827,14 +823,14 @@ function renderVendors() {
 function showVendorModal(idx) {
     var modal = document.getElementById('vendorModal');
     if (idx !== undefined) {
-        document.getElementById('vmodal-title').textContent = '编辑运维商';
+        document.getElementById('vmodal-title').textContent = '编辑运维 ?;
         document.getElementById('v-index').value = idx;
         document.getElementById('v-type').value = vendors[idx].type;
         document.getElementById('v-vendor').value = vendors[idx].vendor;
         document.getElementById('v-contact').value = vendors[idx].contact;
         document.getElementById('v-phone').value = vendors[idx].phone;
     } else {
-        document.getElementById('vmodal-title').textContent = '新增运维商';
+        document.getElementById('vmodal-title').textContent = '新增运维 ?;
         document.getElementById('v-index').value = '';
         document.getElementById('v-type').value = '存取款一体机/ATM';
         document.getElementById('v-vendor').value = '';
@@ -987,11 +983,11 @@ function renderWarehouse() {
     });
     if (!html) html = '<tr><td colspan="8" class="text-center text-muted">暂无记录</td></tr>';
     document.getElementById('warehouse-table').innerHTML = html;
-    document.getElementById('wh-page-info').textContent = '共 '+filtered.length+' 条，第 '+whCurrentPage+'/'+totalPages+' 页';
+    document.getElementById('wh-page-info').textContent = ' ?'+filtered.length+' 条， ?'+whCurrentPage+'/'+totalPages+'  ?;
     var pgHtml = '';
     if (totalPages > 1) {
-        pgHtml = '<button class="btn btn-sm btn-outline-secondary me-1"'+(whCurrentPage>1?' onclick="whCurrentPage--;renderWarehouse()"':' disabled')+'>上一页</button>';
-        pgHtml += '<button class="btn btn-sm btn-outline-secondary"'+(whCurrentPage<totalPages?' onclick="whCurrentPage++;renderWarehouse()"':' disabled')+'>下一页</button>';
+        pgHtml = '<button class="btn btn-sm btn-outline-secondary me-1"'+(whCurrentPage>1?' onclick="whCurrentPage--;renderWarehouse()"':' disabled')+'>上一 ?/button>';
+        pgHtml += '<button class="btn btn-sm btn-outline-secondary"'+(whCurrentPage<totalPages?' onclick="whCurrentPage++;renderWarehouse()"':' disabled')+'>下一 ?/button>';
     }
     document.getElementById('wh-pagination').innerHTML = pgHtml;
 }
@@ -1005,11 +1001,9 @@ function resetWarehouseFilters() {
 }
 
 function showWarehouseTab(tab) {
-    // 取消自动调用，用户手动点击统计按钮
-}
+    // 取消自动调用，用户手动点击统计按 ?}
 
-// 仓储费用计算 - 支持多月份
-function calculateStorageFee() {
+// 仓储费用计算 - 支持多月 ?function calculateStorageFee() {
     var startMonth = document.getElementById('sf-month-start').value;
     var endMonth = document.getElementById('sf-month-end').value;
     if (!startMonth || !endMonth) { alert('请选择开始和结束月份'); return; }
@@ -1019,7 +1013,7 @@ function calculateStorageFee() {
     var startMon = parseInt(startParts[1]);
     var endYear = parseInt(endParts[0]);
     var endMon = parseInt(endParts[1]);
-    if (startYear > endYear || (startYear === endYear && startMon > endMon)) { alert('开始月份不能晚于结束月份'); return; }
+    if (startYear > endYear || (startYear === endYear && startMon > endMon)) { alert('开始月份不能晚于结束月 ?); return; }
     
     // 生成月份列表
     var months = [];
@@ -1044,17 +1038,14 @@ function calculateStorageFee() {
             var price = WH_PRICE_MAP[cat];
             var count = 0;
             
-            // 遍历所有入库记录，找在库物品
-            whRecords.forEach(function(r) {
+            // 遍历所有入库记录，找在库物 ?            whRecords.forEach(function(r) {
                 if (r.category !== cat) return;
                 
-                // 找入库记录
-                var inRec = null;
+                // 找入库记 ?                var inRec = null;
                 if (r.type === '入库') {
                     inRec = r;
                 } else if (r.type === '出库' || r.type === '报废') {
-                    // 查找对应的入库记录
-                    inRec = whRecords.find(function(x) {
+                    // 查找对应的入库记 ?                    inRec = whRecords.find(function(x) {
                         return x.type === '入库' && x.name === r.name && x.category === cat && new Date(x.date) <= new Date(r.date);
                     });
                 }
@@ -1066,12 +1057,9 @@ function calculateStorageFee() {
                 var inMonth = inDate.getMonth() + 1;
                 var inDay = inDate.getDate();
                 
-                // 判断该入库物品是否需要计费
-                // 规则：16日及之前入库，当月计费；16日之后入库，当月不计费
-                var shouldCharge = false;
+                // 判断该入库物品是否需要计 ?                // 规则 ?6日及之前入库，当月计费；16日之后入库，当月不计 ?                var shouldCharge = false;
                 if (inYear < targetYear || (inYear === targetYear && inMonth < targetMonth)) {
-                    // 之前月份入库，检查是否在目标月份之前已出库
-                    var outDate = null;
+                    // 之前月份入库，检查是否在目标月份之前已出 ?                    var outDate = null;
                     if (r.type === '出库' || r.type === '报废') {
                         outDate = new Date(r.date);
                     } else {
@@ -1087,10 +1075,9 @@ function calculateStorageFee() {
                         shouldCharge = true;
                     }
                 } else if (inYear === targetYear && inMonth === targetMonth) {
-                    // 当月入库，16日及之前计费，16日之后不计费
+                    // 当月入库 ?6日及之前计费 ?6日之后不计费
                     if (inDay <= cutOffDay) {
-                        // 检查当月是否出库
-                        var outRec = whRecords.find(function(x) {
+                        // 检查当月是否出 ?                        var outRec = whRecords.find(function(x) {
                             return (x.type === '出库' || x.type === '报废') && x.name === r.name && x.category === cat;
                         });
                         var outDate = outRec ? new Date(outRec.date) : null;
@@ -1121,7 +1108,7 @@ function renderStorageFeePage() {
     var html = '';
     var lastYearMonth = '';
     pageData.forEach(function(r) {
-        var yearMonth = r.year + '年' + r.month + '月';
+        var yearMonth = r.year + ' ? + r.month + ' ?;
         var rowspan = '';
         if (yearMonth !== lastYearMonth) {
             // 计算该月份有幾條記錄
@@ -1138,11 +1125,11 @@ function renderStorageFeePage() {
     sfAllResults.forEach(function(r) { totalQty += r.qty; totalFee += r.fee; });
     document.getElementById('sf-total-qty').textContent = totalQty;
     document.getElementById('sf-total-fee').textContent = totalFee;
-    document.getElementById('sf-page-info').textContent = '共 '+sfAllResults.length+' 条，第 '+sfCurrentPage+'/'+totalPages+' 页';
+    document.getElementById('sf-page-info').textContent = ' ?'+sfAllResults.length+' 条， ?'+sfCurrentPage+'/'+totalPages+'  ?;
     var pgHtml = '';
     if (totalPages > 1) {
-        pgHtml = '<button class="btn btn-sm btn-outline-secondary me-1"'+(sfCurrentPage>1?' onclick="sfCurrentPage--;renderStorageFeePage()"':' disabled')+'>上一页</button>';
-        pgHtml += '<button class="btn btn-sm btn-outline-secondary"'+(sfCurrentPage<totalPages?' onclick="sfCurrentPage++;renderStorageFeePage()"':' disabled')+'>下一页</button>';
+        pgHtml = '<button class="btn btn-sm btn-outline-secondary me-1"'+(sfCurrentPage>1?' onclick="sfCurrentPage--;renderStorageFeePage()"':' disabled')+'>上一 ?/button>';
+        pgHtml += '<button class="btn btn-sm btn-outline-secondary"'+(sfCurrentPage<totalPages?' onclick="sfCurrentPage++;renderStorageFeePage()"':' disabled')+'>下一 ?/button>';
     }
     document.getElementById('sf-pagination').innerHTML = pgHtml;
 }
@@ -1168,7 +1155,7 @@ function handleBatchFile(input) {
             var json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
             parseAndValidateBatch(json);
         } catch(err) {
-            alert('Excel文件解析失败：' + err.message);
+            alert('Excel文件解析失败 ? + err.message);
         }
     };
     reader.readAsArrayBuffer(file);
@@ -1190,25 +1177,23 @@ function parseAndValidateBatch(data) {
         var qty = parseInt(row[5]) || 1;
         var remark = String(row[6] || '').trim();
         // 校验
-        if (!name) { errors.push('第' + rowNum + '行：货物名称不能为空'); return; }
+        if (!name) { errors.push(' ? + rowNum + '行：货物名称不能为空'); return; }
         // 校验货物类型
         if (!VALID_CATEGORIES.includes(category)) {
-            errors.push('第' + rowNum + '行：货物类型"' + category + '"无效，可选：' + VALID_CATEGORIES.join('、'));
+            errors.push(' ? + rowNum + '行：货物类型"' + category + '"无效，可选：' + VALID_CATEGORIES.join(' ?));
             return;
         }
         // 校验货物名称是否在类型列表中
         var validNames = WH_NAME_MAP[category] || [];
         if (!validNames.includes(name)) {
-            errors.push('第' + rowNum + '行：货物名称"' + name + '"不属于类型"' + category + '"，可选：' + validNames.join('、'));
+            errors.push(' ? + rowNum + '行：货物名称"' + name + '"不属于类 ?' + category + '"，可选：' + validNames.join(' ?));
             return;
         }
-        // 校验出入库类型
-        if (!['入库', '出库', '报废'].includes(ioType)) {
-            errors.push('第' + rowNum + '行：出入库类型"' + ioType + '"无效');
+        // 校验出入库类 ?        if (!['入库', '出库', '报废'].includes(ioType)) {
+            errors.push(' ? + rowNum + '行：出入库类 ?' + ioType + '"无效');
             return;
         }
-        // 格式化日期
-        if (typeof date === 'number') {
+        // 格式化日 ?        if (typeof date === 'number') {
             var d = new Date((date - 25569) * 86400 * 1000);
             date = d.toISOString().split('T')[0];
         } else if (date) {
@@ -1219,17 +1204,17 @@ function parseAndValidateBatch(data) {
     // 显示预览
     var preview = document.getElementById('batch-preview');
     if (errors.length > 0) {
-        preview.innerHTML = '<div class="alert alert-danger small"><strong>校验失败：</strong><br>' + errors.join('<br>') + '</div>';
+        preview.innerHTML = '<div class="alert alert-danger small"><strong>校验失败 ?/strong><br>' + errors.join('<br>') + '</div>';
         document.getElementById('batch-import-btn').disabled = true;
     } else if (batchImportData.length === 0) {
         preview.innerHTML = '<p class="text-muted text-center">文件为空或无有效数据</p>';
         document.getElementById('batch-import-btn').disabled = true;
     } else {
-        var html = '<table class="table table-sm table-bordered"><thead><tr><th>序号</th><th>出入库类型</th><th>时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th></tr></thead><tbody>';
+        var html = '<table class="table table-sm table-bordered"><thead><tr><th>序号</th><th>出入库类 ?/th><th>时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th></tr></thead><tbody>';
         batchImportData.forEach(function(item, idx) {
             html += '<tr><td>'+(idx+1)+'</td><td>'+item.type+'</td><td>'+item.date+'</td><td>'+item.name+'</td><td>'+item.category+'</td><td>'+item.qty+'</td><td>'+(item.remark||'')+'</td></tr>';
         });
-        html += '</tbody></table><p class="text-success small mt-2">共 ' + batchImportData.length + ' 条记录，校验通过</p>';
+        html += '</tbody></table><p class="text-success small mt-2"> ?' + batchImportData.length + ' 条记录，校验通过</p>';
         preview.innerHTML = html;
         document.getElementById('batch-import-btn').disabled = false;
     }
@@ -1251,12 +1236,12 @@ function confirmBatchImport() {
     saveWarehouseRecords();
     bootstrap.Modal.getInstance(document.getElementById('batchImportModal')).hide();
     renderWarehouse();
-    alert('成功导入 ' + batchImportData.length + ' 条记录');
+    alert('成功导入 ' + batchImportData.length + ' 条记 ?);
 }
 
 function downloadBatchTemplate() {
     var data = [
-        ['序号', '出入库类型', '出入库时间', '货物名称', '货物类型', '数量', '备注'],
+        ['序号', '出入库类 ?, '出入库时 ?, '货物名称', '货物类型', '数量', '备注'],
         [1, '入库', '2025-11-01', 'OKI存取款机', '现金自助设备', 1, ''],
         [2, '出库', '2025-11-15', 'OKI存取款机', '现金自助设备', 1, ''],
         [3, '入库', '2025-12-01', '智能柜台', '自助设备', 2, '']
@@ -1269,27 +1254,33 @@ function downloadBatchTemplate() {
 
 init();
 
-// --- 贾克斯植入的同步逻辑开始 ---
+// --- 贾克斯植入的同步逻辑开 ?---
 const GIST_SET_KEY = 'GIST_ID_VAL';
 const GIST_TOKEN_KEY = 'GITHUB_TOKEN_VAL';
+const FIXED_GIST_ID = '9ae11536cf7304baed38841a47c39385';
+
+// 初始化：自动设置固定Gist ID
+(function() {
+    localStorage.setItem(GIST_SET_KEY, FIXED_GIST_ID);
+})();
 
 function saveGithubToken() {
     const token = document.getElementById('github-token-input').value.trim();
-    if (!token) { alert('请输入 GitHub Token'); return; }
+    if (!token) { alert('请输 ?GitHub Token'); return; }
     localStorage.setItem(GIST_TOKEN_KEY, token);
-    alert('Token 保存成功！');
+    alert('Token 保存成功 ?);
 }
 
 function saveGistSetting() {
     const val = document.getElementById('gist-id-input').value.trim();
     localStorage.setItem(GIST_SET_KEY, val);
-    alert('配置已完成！请回工单管理点击同步。');
+    alert('配置已完成！请回工单管理点击同步 ?);
     showPage('workorders');
 }
 
 async function syncFromGist() {
-    const gistId = localStorage.getItem(GIST_SET_KEY);
-    if(!gistId) { alert('请先在“系统设置”配置 Gist ID'); return; }
+    const gistId = FIXED_GIST_ID;
+    if(!gistId) { alert('请先在“系统设置”配 ?Gist ID'); return; }
     const btn = document.querySelector('button[onclick="syncFromGist()"]');
     const oldText = btn.innerText;
     btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
@@ -1301,16 +1292,19 @@ async function syncFromGist() {
         saveWorkorders();
         renderWorkorders();
         alert('🎉 同步完毕，加载成功！');
-    } catch(err) { alert('同步失败：' + err.message); }
+    } catch(err) { alert('同步失败 ? + err.message); }
     finally { btn.disabled = false; btn.innerText = oldText; }
 }
 
-// 上传数据到 Gist
+// 上传数据 ?Gist
 async function uploadToGist(showMsg) {
-    const gistId = localStorage.getItem(GIST_SET_KEY);
+    const gistId = FIXED_GIST_ID;
     const token = localStorage.getItem(GIST_TOKEN_KEY);
-    if (!gistId || !token) {
-        if (showMsg !== false) console.log('未配置 Gist ID 或 Token');
+    if (!token) {
+        if (showMsg !== false) {
+            console.log('未配 ?GitHub Token');
+            showSyncToast('warning', '未配置云端同 ?);
+        }
         return;
     }
     
@@ -1333,10 +1327,38 @@ async function uploadToGist(showMsg) {
         });
         
         if (!res.ok) throw new Error('上传失败');
-        if (showMsg !== false) console.log('云端同步成功');
+        if (showMsg !== false) {
+            console.log('云端同步成功');
+            showSyncToast('success', '数据已同步至云端');
+        }
     } catch(err) {
         console.log('云端同步失败:', err.message);
+        if (showMsg !== false) {
+            showSyncToast('error', '同步失败 ? + err.message);
+        }
     }
+}
+
+// 显示同步提示 Toast
+function showSyncToast(type, message) {
+    const existing = document.querySelector('.sync-toast');
+    if (existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'sync-toast';
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-size:14px;z-index:10000;animation:slideIn 0.3s ease;box-shadow:0 4px 12px rgba(0,0,0,0.2);max-width:280px;';
+    
+    if (type === 'success') toast.style.background = '#28a745';
+    else if (type === 'error') toast.style.background = '#dc3545';
+    else { toast.style.background = '#ffc107'; toast.style.color = '#333'; }
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 // --- 贾克斯植入的同步逻辑结束 ---
