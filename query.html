@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>工单进度查询</title>
+    <title>网点运维信息查询</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -14,15 +14,54 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
         }
         .container { max-width: 100%; margin: 0 auto; padding: 15px; }
-        .header { text-align: center; color: #fff; margin-bottom: 20px; padding-top: 10px; }
-        .header h1 { font-size: 22px; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .header p { font-size: 13px; opacity: 0.9; margin: 0; }
+        
+        /* 头部标题 */
+        .header { text-align: center; color: #fff; margin-bottom: 15px; padding-top: 10px; }
+        .header h1 { font-size: 20px; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .header p { font-size: 12px; opacity: 0.9; margin: 0; }
+        
+        /* 切换按钮区域 */
+        .tab-switch {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 14px 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .tab-btn.active {
+            background: #fff;
+            color: #1976d2;
+            border-color: #fff;
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* 搜索卡片 */
         .search-card { 
             background: #fff; 
             border-radius: 16px; 
             padding: 20px; 
             box-shadow: 0 8px 32px rgba(0,0,0,0.12); 
             margin-bottom: 15px; 
+        }
+        .search-card h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #1976d2;
         }
         .search-input { 
             border: 2px solid #e3f2fd; 
@@ -52,6 +91,32 @@
             color: #fff; 
         }
         
+        /* 设备查询区域 */
+        .device-content {
+            display: none;
+        }
+        .device-content.active {
+            display: block;
+        }
+        
+        /* iframe容器 */
+        .device-iframe {
+            width: 100%;
+            height: calc(100vh - 200px);
+            min-height: 500px;
+            border: none;
+            border-radius: 12px;
+            background: #fff;
+        }
+        
+        /* 工单查询区域 */
+        .order-content {
+            display: none;
+        }
+        .order-content.active {
+            display: block;
+        }
+        
         /* 查询结果卡片 */
         .result-card { 
             background: #fff; 
@@ -79,9 +144,6 @@
             font-size: 14px;
             color: #333;
             flex: 1;
-        }
-        .result-card .row-value.no-label {
-            margin-left: 0;
         }
         .result-card .dept-row {
             background: #e3f2fd;
@@ -153,34 +215,58 @@
             color: rgba(255,255,255,0.7);
             margin-top: 8px;
         }
+        
         @media (max-width: 576px) {
             .container { padding: 12px; }
-            .search-card, .result-card { padding: 14px; border-radius: 12px; }
-            .header h1 { font-size: 20px; }
-            .result-card .row-group { padding: 6px 0; }
+            .header h1 { font-size: 18px; }
+            .tab-btn { font-size: 14px; padding: 12px 8px; }
+            .device-iframe { height: calc(100vh - 180px); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 工单进度查询</h1>
-            <p>输入网点名称，快速查询维修进度</p>
+            <h1>🏢 网点运维信息查询</h1>
+            <p>选择查询类型，快速获取信息</p>
         </div>
         
-        <div class="search-card">
-            <input type="text" class="form-control search-input" id="search-input" placeholder="请输入网点名称..." autocomplete="off">
-            <button class="btn search-btn" onclick="searchOrders()">查 询</button>
+        <!-- 切换按钮 -->
+        <div class="tab-switch">
+            <button class="tab-btn active" onclick="switchTab('order')" id="btn-order">
+                📋 工单进度查询
+            </button>
+            <button class="tab-btn" onclick="switchTab('device')" id="btn-device">
+                🖥️ 网点设备查询
+            </button>
         </div>
         
-        <div id="results"></div>
-        <div class="tips">输入关键词即可查询，如"支行"、"分行"、"网点"</div>
-        <div class="sync-status" id="sync-status"></div>
+        <!-- 工单进度查询内容 -->
+        <div class="order-content active" id="order-content">
+            <div class="search-card">
+                <h3>工单进度查询</h3>
+                <input type="text" class="form-control search-input" id="search-input" placeholder="请输入网点名称..." autocomplete="off">
+                <button class="btn search-btn" onclick="searchOrders()">查 询</button>
+            </div>
+            <div class="tips">输入关键词即可查询，如"支行"、"分行"、"网点"</div>
+            <div id="results"></div>
+            <div class="sync-status" id="sync-status"></div>
+        </div>
+        
+        <!-- 网点设备查询内容 -->
+        <div class="device-content" id="device-content">
+            <div class="search-card">
+                <h3>网点设备查询</h3>
+                <p style="font-size:13px;color:#666;margin-bottom:10px">设备维护信息由独立系统提供</p>
+            </div>
+            <iframe class="device-iframe" id="device-iframe" src="设备运维查询.html"></iframe>
+        </div>
     </div>
 
     <script>
         const GIST_ID = '9ae11536cf7304baed38841a47c39385';
         let workorders = [];
+        let currentTab = 'order';
         
         // 运维商联系方式
         const vendorContacts = {
@@ -194,6 +280,27 @@
             '北京信立合创信息技术有限公司': { contact: '谭因金', phone: '13878372640' },
             '其他': { contact: '', phone: '' }
         };
+        
+        // 切换标签
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnOrder = document.getElementById('btn-order');
+            const btnDevice = document.getElementById('btn-device');
+            const orderContent = document.getElementById('order-content');
+            const deviceContent = document.getElementById('device-content');
+            
+            if (tab === 'order') {
+                btnOrder.classList.add('active');
+                btnDevice.classList.remove('active');
+                orderContent.classList.add('active');
+                deviceContent.classList.remove('active');
+            } else {
+                btnDevice.classList.add('active');
+                btnOrder.classList.remove('active');
+                deviceContent.classList.add('active');
+                orderContent.classList.remove('active');
+            }
+        }
         
         function showSyncStatus(msg) {
             document.getElementById('sync-status').textContent = msg;
@@ -215,7 +322,9 @@
             syncFromGist();
             
             setInterval(function() {
-                syncFromGist(true);
+                if (currentTab === 'order') {
+                    syncFromGist(true);
+                }
             }, 3 * 60 * 1000);
         });
         
@@ -268,8 +377,8 @@
             
             if (filtered.length === 0) {
                 document.getElementById('results').innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none"stroke="currentColor" stroke-width="1.5">
+                    <div class="empty-state" style="background:rgba(255,255,255,0.1);border-radius:12px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                             <path d="M11 8v6M8 11h6"/>
                         </svg>
@@ -286,7 +395,7 @@
         function renderResults(orders) {
             if (!orders || orders.length === 0) {
                 document.getElementById('results').innerHTML = `
-                    <div class="empty-state">
+                    <div class="empty-state" style="background:rgba(255,255,255,0.1);border-radius:12px">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                             <polyline points="14 2 14 8 20 8"/>
@@ -311,43 +420,32 @@
                 
                 html += `
                     <div class="result-card">
-                        <!-- 第一排：网点名称（突出显示） -->
                         <div class="row-group dept-row">
                             <span class="row-label">网点名称</span>
                             <span class="row-value">${order.dept || '-'}</span>
                         </div>
-                        
-                        <!-- 第二排：工单号 + 报修日期 -->
                         <div class="row-group">
                             <span class="row-label">工单号</span>
                             <span class="row-value">${order.id}</span>
                             <span class="row-label" style="margin-left:20px">报修日期</span>
                             <span class="row-value">${date}</span>
                         </div>
-                        
-                        <!-- 第三排：运维商 + 工单状态 -->
                         <div class="row-group">
                             <span class="row-label">运维商</span>
                             <span class="row-value">${vendor}</span>
                             <span class="row-label" style="margin-left:20px">状态</span>
                             <span class="row-value"><span class="status-badge status-${status}">${status}</span></span>
                         </div>
-                        
-                        <!-- 第四排：维修人员-姓名-电话 -->
                         <div class="row-group">
                             <span class="row-label">维修人员</span>
                             <span class="row-value">${contactInfo.contact}</span>
                             ${contactInfo.phone ? `<a href="tel:${contactInfo.phone}" class="row-value" style="color:#1976d2;text-decoration:none;margin-left:10px">📞 ${contactInfo.phone}</a>` : ''}
                         </div>
-                        
-                        <!-- 第五排：故障描述 -->
                         <div class="row-group desc-row">
                             <span class="row-label">故障描述</span>
                             <span class="row-value">${desc}</span>
                         </div>
-                        
                         ${order.remark ? `
-                        <!-- 第六排：备注 -->
                         <div class="row-group" style="background:#fff9c4;border-radius:8px;margin-top:8px">
                             <span class="row-label">备　注</span>
                             <span class="row-value">${order.remark}</span>
