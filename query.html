@@ -320,17 +320,40 @@
         let currentTab = 'order';
         
         // 运维商联系方式
-        const vendorContacts = {
+        // 运维商数据 - 从localStorage动态读取，与index.html同步
+function getVendorContacts() {
+    let vendorContacts = {};
+    try {
+        const saved = localStorage.getItem('vendors_local');
+        if (saved) {
+            const vendors = JSON.parse(saved);
+            // 按运维商名称聚合
+            const vendorMap = {};
+            vendors.forEach(function(v) {
+                if (!vendorMap[v.vendor]) {
+                    vendorMap[v.vendor] = { contact: v.contact, phone: v.phone };
+                }
+            });
+            vendorContacts = vendorMap;
+        }
+    } catch(e) {}
+    // 如果localStorage为空，使用默认数据
+    if (Object.keys(vendorContacts).length === 0) {
+        vendorContacts = {
             '广东奔腾达电子有限公司': { contact: '周洪啸', phone: '18176252256' },
             '广州南天电脑系统有限公司': { contact: '梁太钦', phone: '13877130518' },
-            '广西百鼎科技有限责任公司': { contact: '郑权', phone: '15907710214' },
-            '广西佳仕运网络科技有限公司': { contact: '陈剑峰', phone: '13977300180' },
+            '广西百鼎科技有限责任公司': { contact: '莫德文', phone: '18278387986' },
+            '广西佳仕运网络科技有限公司': { contact: '陈剑云', phone: '13977300180' },
             '广西南宁市源申隆贸易有限公司': { contact: '陈国斌', phone: '19077164249' },
             '广西三弦建设工程有限公司': { contact: '曾海龙', phone: '13407718924' },
             '桂林宇峰电子科技有限公司': { contact: '唐孝纯', phone: '18178357885' },
             '北京信立合创信息技术有限公司': { contact: '谭因金', phone: '13878372640' },
             '其他': { contact: '', phone: '' }
         };
+    }
+    return vendorContacts;
+}
+const vendorContacts = getVendorContacts();
         
         // 切换标签
         function switchTab(tab) {
