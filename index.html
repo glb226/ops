@@ -342,8 +342,8 @@ let vendors = [
     {type:'存取款一体机/ATM',vendor:'广东奔腾达电子有限公司',contact:'周洪啸',phone:'18176252256'},
     {type:'高速大额存取款机',vendor:'广东奔腾达电子有限公司',contact:'韩东',phone:'18178601382'},
     {type:'回单机/自助终端',vendor:'广州南天电脑系统有限公司',contact:'梁太钦',phone:'13877130518'},
-    {type:'综合版智能柜台',vendor:'广西百鼎科技有限责任公司',contact:'郑权',phone:'15907710214'},
-    {type:'标准版智能柜台',vendor:'广东奔腾达电子有限公司',contact:'肖俊宏',phone:'15878748626'},
+    {type:'综合版智能柜台',vendor:'广西百鼎科技有限责任公司',contact:'莫德文',phone:'18278387986'},
+    {type:'标准版智能柜台',vendor:'广东奔腾达电子有限公司',contact:'肖俊宏',phone:'13878748626'},
     {type:'网银一体机/LED走字屏',vendor:'广西佳仕运网络科技有限公司',contact:'陈剑云',phone:'13977300180'},
     {type:'空调维护',vendor:'广西南宁市源申隆贸易有限公司',contact:'陈国斌',phone:'19077164249'},
     {type:'零星维修',vendor:'广西三弦建设工程有限公司',contact:'曾海龙',phone:'13407718924'},
@@ -456,6 +456,11 @@ function confirmCreate() {
         document.getElementById('success-content').innerHTML = '<p>工单号：<strong>'+order.id+'</strong></p><p>机构：'+order.dept+'</p><p>设备：'+order.device+'</p><p>运维商：'+order.vendor+'</p><p>状态：'+order.status+'</p>';
         document.getElementById('success-result').style.display = 'block';
         btn.disabled = false; btn.textContent = '确认生成工单';
+        // 显示同步状态
+        var token = localStorage.getItem(GIST_TOKEN_KEY);
+        if (!token) {
+            document.getElementById('success-content').innerHTML += '<div class="alert alert-warning mt-2 mb-0 py-2" style="font-size:12px">未配置 GitHub Token，工单仅保存在本地</div>';
+        }
     }, 300);
 }
 
@@ -463,14 +468,27 @@ function deleteWorkorder(id) {
     if (!confirm('确定删除此工单?')) return;
     workorders = workorders.filter(function(o) { return o.id !== id; });
     saveWorkorders();
-    uploadToGist(true);
+    uploadToGist(true, function(success) {
+        if (success) {
+            alert('工单已删除并同步至云端');
+        } else {
+            alert('工单已删除，但云端同步失败');
+        }
+    });
     renderWorkorders();
     renderDashboard();
 }
 
 function updateStatus(id, status) {
     var order = workorders.find(function(o) { return o.id === id; });
-    if (order) { order.status = status; if (status === '已完成') order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); uploadToGist(true); renderDashboard(); }
+    if (order) { order.status = status; if (status === '已完成') order.complete_time = new Date().toISOString(); else order.complete_time = null; saveWorkorders(); 
+        uploadToGist(true, function(success) {
+            if (!success) {
+                alert('状态已更新，但云端同步失败');
+            }
+        });
+        renderDashboard(); 
+    }
 }
 
 function updateRemark(id, remark) {
@@ -710,11 +728,31 @@ function showPage(page) {
 }
 
 // ========== 云端同步 ==========
-function saveGithubToken() {
+async function saveGithubToken() {
     var token = document.getElementById('github-token-input').value.trim();
     if (!token) { alert('请输入 GitHub Token'); return; }
     localStorage.setItem(GIST_TOKEN_KEY, token);
-    alert('Token 保存成功！');
+    // 验证Token是否有效
+    try {
+        var btn = document.querySelector('button[onclick="saveGithubToken()"]');
+        btn.disabled = true;
+        btn.textContent = '验证中...';
+        var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+            alert('Token 保存成功！已验证有效，云端同步功能已启用。');
+        } else if (res.status === 401) {
+            alert('Token无效：授权被拒绝，请检查Token是否正确。');
+            localStorage.removeItem(GIST_TOKEN_KEY);
+        } else {
+            alert('Token 保存成功，但验证时返回错误，代码：' + res.status);
+        }
+    } catch(err) {
+        alert('Token 已保存，但无法验证连接：' + err.message);
+    }
+    btn.disabled = false;
+    btn.textContent = '保存 Token';
 }
 
 async function syncFromGist() {
@@ -733,18 +771,33 @@ async function syncFromGist() {
     finally { btn.disabled = false; btn.innerText = oldText; }
 }
 
-async function uploadToGist(showMsg) {
+async function uploadToGist(showMsg, callback) {
     var token = localStorage.getItem(GIST_TOKEN_KEY);
-    if (!token) { if (showMsg !== false) console.log('未配置 GitHub Token'); return; }
+    if (!token) { 
+        if (showMsg === true && callback) callback(false);
+        else if (showMsg === true) alert('未配置 GitHub Token，无法同步至云端。请到"系统设置"中配置。');
+        return; 
+    }
     try {
         var content = JSON.stringify(workorders, null, 2);
         var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID, {
             method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
             body: JSON.stringify({ description: '工单数据同步', files: { 'workorders.json': { content: content } } })
         });
-        if (!res.ok) throw new Error('上传失败');
-        if (showMsg !== false) console.log('云端同步成功');
-    } catch(err) { if (showMsg !== false) console.log('云端同步失败:', err.message); }
+        if (!res.ok) {
+            if (res.status === 401) {
+                if (showMsg === true) alert('Token已失效，请到"系统设置"中重新配置。');
+            } else {
+                if (showMsg === true) alert('云端同步失败，HTTP错误：' + res.status);
+            }
+            if (callback) callback(false);
+            return;
+        }
+        if (callback) callback(true);
+    } catch(err) { 
+        if (showMsg === true) alert('云端同步失败：' + err.message);
+        if (callback) callback(false);
+    }
 }
 
 // ========== 启动 ==========
