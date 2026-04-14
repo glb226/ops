@@ -316,8 +316,49 @@
 
     <script>
         const FIXED_GIST_ID = '9ae11536cf7304baed38841a47c39385';
+        const GITHUB_TOKEN_KEY = 'GITHUB_TOKEN_VAL';
         let workorders = [];
         let currentTab = 'order';
+        
+        // 设备数据
+        let orgMap = {};
+        let deviceData = {};
+        
+        // 获取GitHub Token
+        function getGithubToken() {
+            return localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+        }
+        
+        // 从Gist同步设备数据
+        async function syncDeviceDataFromGist() {
+            const gistId = FIXED_GIST_ID;
+            const token = getGithubToken();
+            try {
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json'
+                };
+                if (token) {
+                    headers['Authorization'] = 'Bearer ' + token;
+                }
+                const res = await fetch(`https://api.github.com/gists/${gistId}`, { 
+                    headers: headers,
+                    signal: AbortSignal.timeout(15000)
+                });
+                if (!res.ok) throw new Error('获取设备数据失败');
+                const data = await res.json();
+                const content = data.files['deviceData.json']?.content;
+                if (content) {
+                    const parsed = JSON.parse(content);
+                    orgMap = parsed.orgMap || {};
+                    deviceData = parsed.deviceData || {};
+                    localStorage.setItem('deviceData_local', JSON.stringify({orgMap: orgMap, deviceData: deviceData}));
+                }
+            } catch(e) {
+                console.log('同步设备数据失败:', e.message);
+                // 尝试从本地存储加载
+                loadDeviceDataFromStorage();
+            }
+        }
         
         // 运维商联系方式
         // 运维商数据 - 从localStorage动态读取，与index.html同步
@@ -406,13 +447,26 @@ const vendorContacts = getVendorContacts();
             if (!silent) showSyncStatus('正在加载数据...');
             
             const gistId = FIXED_GIST_ID;
+            const token = getGithubToken();
             
             try {
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'cache': 'no-store'
+                };
+                if (token) {
+                    headers['Authorization'] = 'Bearer ' + token;
+                }
+                
                 const res = await fetch(`https://api.github.com/gists/${gistId}`, { 
-                    cache: 'no-store',
+                    headers: headers,
                     signal: AbortSignal.timeout(15000)
                 });
-                if (!res.ok) throw new Error('网络请求失败');
+                if (!res.ok) {
+                    if (res.status === 404) throw new Error('Gist不存在或无权访问');
+                    if (res.status === 403) throw new Error('Token无效或权限不足');
+                    throw new Error('网络请求失败: ' + res.status);
+                }
                 
                 const data = await res.json();
                 const content = data.files['workorders.json']?.content;
@@ -432,7 +486,7 @@ const vendorContacts = getVendorContacts();
                     if (workorders.length > 0) {
                         showSyncStatus('使用本地缓存，同步失败: ' + err.message);
                     } else {
-                        showSyncStatus('加载失败，请检查网络');
+                        showSyncStatus('加载失败，请检查Token配置');
                     }
                 }
             }
@@ -645,6 +699,7 @@ const vendorContacts = getVendorContacts();
         // 页面加载时初始化设备数据
         document.addEventListener('DOMContentLoaded', function() {
             loadDeviceDataFromStorage();
+            syncDeviceDataFromGist();
         });
     </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"b1121500f0a04dcb818659fc6d06324b","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
