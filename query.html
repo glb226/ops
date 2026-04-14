@@ -434,8 +434,13 @@ const vendorContacts = getVendorContacts();
                 if (e.key === 'Enter') searchOrders();
             });
             
+            // 同步工单数据（如果Gist中有workorders.json）
             syncFromGist();
             
+            // 同步设备数据 - 修复：添加设备数据同步调用
+            syncDeviceDataFromGist();
+            
+            // 定期同步
             setInterval(function() {
                 if (currentTab === 'order') {
                     syncFromGist(true);
@@ -478,7 +483,18 @@ const vendorContacts = getVendorContacts();
                     renderResults(workorders);
                     if (!silent) showSyncStatus('数据已更新: ' + new Date().toLocaleTimeString() + ' (' + workorders.length + '条工单)');
                 } else {
-                    throw new Error('未找到工单数据');
+                    // Gist中没有工单数据文件，尝试加载本地缓存
+                    const saved = localStorage.getItem('workorders_query');
+                    if (saved) {
+                        try {
+                            workorders = JSON.parse(saved);
+                            if (!silent) showSyncStatus('使用本地缓存 (Gist中无工单数据文件)');
+                        } catch(e) {
+                            if (!silent) showSyncStatus('工单数据未同步，请在管理页面上传工单');
+                        }
+                    } else {
+                        if (!silent) showSyncStatus('请先在管理页面创建工单并同步');
+                    }
                 }
             } catch(err) {
                 console.log('同步失败:', err.message);
