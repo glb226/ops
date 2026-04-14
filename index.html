@@ -61,6 +61,10 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             <span>仓储管理</span>
         </a>
+        <a href="#" onclick="showPage('devices');return false;" class="d-flex align-items-center gap-2" id="nav-devices">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>网点设备</span>
+        </a>
         <a href="#" onclick="showPage('settings');return false;" class="d-flex align-items-center gap-2" id="nav-settings">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span>系统设置</span>
@@ -193,6 +197,75 @@
             </div>
         </div>
         
+        <!-- 网点设备管理页面 -->
+        <div id="page-devices" style="display:none;">
+            <div class="page-title d-flex align-items-center gap-2 justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    网点设备管理
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-sm" onclick="syncDevicesToGist()">同步云端</button>
+                    <button class="btn btn-info btn-sm" onclick="syncDevicesFromGist()">拉取云端</button>
+                </div>
+            </div>
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item"><button class="nav-link active" id="tab-btn-orgs" onclick="showDeviceTab('orgs')">网点管理</button></li>
+                <li class="nav-item"><button class="nav-link" id="tab-btn-equipments" onclick="showDeviceTab('equipments')">设备管理</button></li>
+            </ul>
+            
+            <div id="device-tab-orgs">
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>网点列表 (<span id="org-count">0</span>个网点)</span>
+                        <button class="btn btn-primary btn-sm" onclick="showOrgModal()">+ 新增网点</button>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="search-org" placeholder="搜索网点名称" onkeyup="if(event.key==='Enter')renderOrgs()">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary btn-sm" onclick="renderOrgs()">搜索</button>
+                    </div>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="table table-sm table-hover">
+                        <thead><tr><th>机构编号</th><th>网点名称</th><th>设备数量</th><th>操作</th></tr></thead>
+                        <tbody id="org-table"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="device-tab-equipments" style="display:none;">
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>设备列表</span>
+                        <button class="btn btn-primary btn-sm" onclick="showDeviceItemModal()">+ 新增设备</button>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="filter-device-org" onchange="renderDeviceItems()">
+                            <option value="">全部网点</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control form-control-sm" id="search-device-item" placeholder="搜索设备品牌/负责人" onkeyup="if(event.key==='Enter')renderDeviceItems()">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary btn-sm" onclick="renderDeviceItems()">搜索</button>
+                    </div>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="table table-sm table-hover">
+                        <thead><tr><th>网点</th><th>设备类型</th><th>设备品牌</th><th>维护商</th><th>负责人</th><th>电话</th><th>备注</th><th>操作</th></tr></thead>
+                        <tbody id="device-item-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
         <!-- 仓储管理页面 -->
         <div id="page-warehouse" style="display:none;">
             <div class="page-title d-flex align-items-center gap-2">
@@ -282,6 +355,50 @@
 
 <div class="modal fade" id="warehouseModal"><div class="modal-dialog"><div class="modal-content">
     <div class="modal-header"><h6 class="modal-title" id="wh-modal-title">入库</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+</div></div></div>
+
+<div class="modal fade" id="orgModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title" id="org-modal-title">编辑网点</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <input type="hidden" id="org-old-code">
+        <div class="mb-2"><label class="small">机构编号</label><input type="text" class="form-control form-control-sm" id="org-code"></div>
+        <div class="mb-2"><label class="small">网点名称</label><input type="text" class="form-control form-control-sm" id="org-name"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveOrg()">保存</button></div>
+</div></div></div>
+
+<div class="modal fade" id="deviceItemModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title" id="di-modal-title">编辑设备</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <input type="hidden" id="di-idx">
+        <input type="hidden" id="di-device-idx">
+        <div class="mb-2"><label class="small">所属网点</label>
+            <select class="form-select form-select-sm" id="di-org"></select>
+        </div>
+        <div class="mb-2"><label class="small">设备类型</label><input type="text" class="form-control form-control-sm" id="di-type"></div>
+        <div class="mb-2"><label class="small">设备品牌</label><input type="text" class="form-control form-control-sm" id="di-brand"></div>
+        <div class="mb-2"><label class="small">维护商</label><input type="text" class="form-control form-control-sm" id="di-vendor"></div>
+        <div class="mb-2"><label class="small">负责人</label><input type="text" class="form-control form-control-sm" id="di-contact"></div>
+        <div class="mb-2"><label class="small">电话</label><input type="text" class="form-control form-control-sm" id="di-phone"></div>
+        <div class="mb-2"><label class="small">备注</label><textarea class="form-control form-control-sm" id="di-remark" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveDeviceItem()">保存</button></div>
+</div></div></div>
+
+<div class="modal fade" id="viewOrgDevicesModal"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title" id="view-org-title">网点设备</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" style="max-height:60vh;overflow-y:auto">
+        <div style="overflow-x:auto">
+            <table class="table table-sm">
+                <thead><tr><th>设备类型</th><th>设备品牌</th><th>维护商</th><th>负责人</th><th>电话</th><th>备注</th><th>操作</th></tr></thead>
+                <tbody id="view-org-devices-table"></tbody>
+            </table>
+        </div>
+    </div>
+</div></div></div>
+
+<div class="modal fade" id="warehouseModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title" id="wh-modal-title">入库</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
         <div class="mb-2"><label class="small">货物类型</label>
             <select class="form-select form-select-sm" id="wh-type">
@@ -297,6 +414,7 @@
 
 <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="devices.js"></script>
 
 <script>
 // ========== 配置 ==========
@@ -335,6 +453,7 @@ const deviceVendorMap = {
     '零星维修': '广西三弦建设工程有限公司',
     '叫号机/宣传屏': '桂林宇峰电子科技有限公司',
     '征信查询机': '北京信立合创信息技术有限公司',
+    '移动营销/底座/GPS': '广西佳仕运网络科技有限公司',
     '安防': '其他', '网络设备': '其他', '其他': '其他'
 };
 
@@ -349,6 +468,7 @@ let vendors = [
     {type:'零星维修',vendor:'广西三弦建设工程有限公司',contact:'曾海龙',phone:'13407718924'},
     {type:'叫号机/宣传屏',vendor:'桂林宇峰电子科技有限公司',contact:'唐孝纯',phone:'18178357885'},
     {type:'征信查询机',vendor:'北京信立合创信息技术有限公司',contact:'谭因金',phone:'13878372640'},
+    {type:'移动营销/底座/GPS',vendor:'业务问题请在企业微信群反馈，设备故障请在分行后勤维修群报修',contact:'',phone:''},
     {type:'安防',vendor:'其他',contact:'',phone:''},
     {type:'网络设备',vendor:'其他',contact:'',phone:''},
     {type:'其他',vendor:'其他',contact:'',phone:''}
@@ -718,13 +838,14 @@ function calculateStorageFee() {
 
 // ========== 页面切换 ==========
 function showPage(page) {
-    ['generate', 'workorders', 'dashboard', 'vendors', 'warehouse', 'settings'].forEach(function(p) { var el = document.getElementById('page-' + p); if(el) el.style.display = 'none'; var nav = document.getElementById('nav-' + p); if(nav) nav.classList.remove('active'); });
+    ['generate', 'workorders', 'dashboard', 'vendors', 'warehouse', 'devices', 'settings'].forEach(function(p) { var el = document.getElementById('page-' + p); if(el) el.style.display = 'none'; var nav = document.getElementById('nav-' + p); if(nav) nav.classList.remove('active'); });
     document.getElementById('page-' + page).style.display = 'block';
     document.getElementById('nav-' + page).classList.add('active');
     if (page === 'workorders') renderWorkorders();
     else if (page === 'dashboard') renderDashboard();
     else if (page === 'vendors') renderVendors();
     else if (page === 'warehouse') renderWarehouse();
+    else if (page === 'devices') { renderOrgs(); updateDeviceOrgSelect(); }
 }
 
 // ========== 云端同步 ==========
@@ -803,5 +924,6 @@ async function uploadToGist(showMsg, callback) {
 // ========== 启动 ==========
 init();
 </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"b1121500f0a04dcb818659fc6d06324b","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
