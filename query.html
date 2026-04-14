@@ -608,9 +608,6 @@ const vendorContacts = getVendorContacts();
         // 机构映射 - 从LocalStorage读取
         const DEVICE_STORAGE_KEY = 'deviceData_local';
         
-        let orgMap = {};
-        let deviceData = {};
-        
         // 从LocalStorage加载设备数据
         function loadDeviceDataFromStorage() {
             var saved = localStorage.getItem(DEVICE_STORAGE_KEY);
