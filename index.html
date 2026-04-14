@@ -494,7 +494,11 @@ function loadWorkorders() {
     else { workorders = []; }
 }
 
-function saveWorkorders() { localStorage.setItem(STORAGE_KEY, JSON.stringify(workorders)); }
+function saveWorkorders() { 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(workorders)); 
+    // 同时保存到query页面使用的key
+    localStorage.setItem('workorders_query', JSON.stringify(workorders));
+}
 
 function generateOrderNo() {
     var n = new Date();
