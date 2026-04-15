@@ -244,6 +244,67 @@
         .device-suggestions div:hover { background: #f5f5f5; }
         .device-suggestions .code { color: #1976d2; font-weight: bold; }
         
+        /* 锁屏样式 */
+        .lock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #64b5f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+        }
+        .lock-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            width: 320px;
+        }
+        .lock-box h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        .lock-box input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 2px solid #e3f2fd;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        .lock-box input:focus {
+            border-color: #1976d2;
+            outline: none;
+        }
+        .lock-box button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .lock-box button:hover {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+        }
+        .lock-error {
+            color: #e53935;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
         .sync-status {
             text-align: center;
             font-size: 11px;
@@ -259,6 +320,28 @@
     </style>
 </head>
 <body>
+    <!-- 锁屏 -->
+    <div class="lock-overlay" id="lockOverlay">
+        <div class="lock-box">
+            <h2>请输入访问密码</h2>
+            <input type="password" id="lockPassword" placeholder="请输入密码" onkeyup="if(event.key==='Enter')checkPassword()">
+            <button onclick="checkPassword()">确 定</button>
+            <div class="lock-error" id="lockError">密码错误，请重新输入</div>
+        </div>
+    </div>
+    
+    <script>
+    // 页面锁
+    function checkPassword() {
+        var pwd = document.getElementById('lockPassword').value;
+        if (pwd === '96299') {
+            document.getElementById('lockOverlay').style.display = 'none';
+        } else {
+            document.getElementById('lockError').style.display = 'block';
+            document.getElementById('lockPassword').value = '';
+        }
+    }
+    </script>
     <div class="container">
         <div class="header">
             <h1>网点运维信息查询</h1>
@@ -281,7 +364,6 @@
                 <input type="text" class="form-control search-input" id="search-input" placeholder="请输入网点名称..." autocomplete="off">
                 <button class="btn search-btn" onclick="searchOrders()">查 询</button>
             </div>
-            <div class="tips">输入关键词即可查询，如"支行"、"分行"、"网点"</div>
             <div id="results"></div>
             <div class="sync-status" id="sync-status"></div>
         </div>
