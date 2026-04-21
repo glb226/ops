@@ -32,6 +32,10 @@
             .sidebar{display:none}
             .main-content{margin:0;padding:15px}
         }
+        /* 仓储费用表格样式 */
+        #storage-fee-thead th{background:#f8f9fa;font-weight:600;vertical-align:middle}
+        #storage-fee-tbody td{vertical-align:middle}
+        .table-bordered{border-color:#dee2e6}
     </style>
 </head>
 <body>
@@ -1040,48 +1044,72 @@ function calculateStorageFee() {
         });
     });
 
-    // Build header: 设备类型 | 单价(元/月) | [月]月在库 | [月]月费用(元) | ...
-    var thead = '<tr>';
+    // Build header with colspan for months that have no data
+    var grandTotalQty = {};
+    var grandTotalFee = {};
+    months.forEach(function(m) { grandTotalQty[m] = 0; grandTotalFee[m] = 0; });
+
+    // Calculate totals first
+    Object.keys(WH_PRICE_MAP).forEach(function(cat) {
+        months.forEach(function(m) {
+            var qty = stats[m][cat] || 0;
+            grandTotalQty[m] += qty;
+            grandTotalFee[m] += qty * (WH_PRICE_MAP[cat] || 0);
+        });
+    });
+
+    // Build header
+    var thead = '<tr><th class="align-middle text-center" rowspan="2">设备类型</th><th class="align-middle text-center" rowspan="2">单价<br>(元/月)</th>';
     months.forEach(function(m) {
         var monthNum = m.substring(5);
-        thead += '<th class="text-center" colspan="2">' + monthNum + '月</th>';
+        var yearNum = m.substring(0, 4);
+        if (grandTotalQty[m] > 0) {
+            thead += '<th class="text-center" colspan="2">' + yearNum + '年' + monthNum + '月</th>';
+        }
     });
-    thead = '<tr><th rowspan="2">设备类型</th><th rowspan="2">单价(元/月)</th>' + thead + '</tr><tr>';
-    months.forEach(function() {
-        thead += '<th class="text-center">在库数量</th><th class="text-center">费用(元)</th>';
+    thead += '</tr><tr>';
+    months.forEach(function(m) {
+        if (grandTotalQty[m] > 0) {
+            thead += '<th class="text-center">在库数量</th><th class="text-center">费用(元)</th>';
+        }
     });
     thead += '</tr>';
     document.getElementById('storage-fee-thead').innerHTML = thead;
 
     var categories = Object.keys(WH_PRICE_MAP);
     var tbody = '';
-    var grandTotalQty = {};
-    var grandTotalFee = {};
-    months.forEach(function(m) { grandTotalQty[m] = 0; grandTotalFee[m] = 0; });
-
     var hasData = false;
+
     categories.forEach(function(cat) {
         var price = WH_PRICE_MAP[cat] || 0;
-        tbody += '<tr><td>' + cat + '</td><td>' + price + '</td>';
+        var hasAnyData = false;
+        var rowHtml = '<tr><td class="text-center">' + cat + '</td><td class="text-center">' + price + '</td>';
         months.forEach(function(m) {
             var qty = stats[m][cat] || 0;
             var fee = qty * price;
-            if (qty > 0) hasData = true;
-            grandTotalQty[m] += qty;
-            grandTotalFee[m] += fee;
-            tbody += '<td class="text-center">' + (qty > 0 ? qty : '-') + '</td><td class="text-end">' + (fee > 0 ? fee.toLocaleString() : '-') + '</td>';
+            if (qty > 0) { hasData = true; hasAnyData = true; }
+            if (grandTotalQty[m] > 0) {
+                rowHtml += '<td class="text-center">' + (qty > 0 ? qty : '-') + '</td><td class="text-center">' + (fee > 0 ? fee.toLocaleString() : '-') + '</td>';
+            }
         });
-        tbody += '</tr>';
+        rowHtml += '</tr>';
+        if (hasAnyData) tbody += rowHtml;
     });
 
     // 合计行
-    tbody += '<tr class="table-secondary fw-bold"><td>合计</td><td>-</td>';
-    months.forEach(function(m) {
-        tbody += '<td class="text-center">' + (grandTotalQty[m] > 0 ? grandTotalQty[m] : '-') + '</td><td class="text-end">' + (grandTotalFee[m] > 0 ? grandTotalFee[m].toLocaleString() : '-') + '</td>';
-    });
-    tbody += '</tr>';
+    var hasAnyMonthData = months.some(function(m) { return grandTotalQty[m] > 0; });
+    if (hasAnyMonthData) {
+        tbody += '<tr class="table-secondary fw-bold"><td class="text-center">合计</td><td class="text-center">-</td>';
+        months.forEach(function(m) {
+            if (grandTotalQty[m] > 0) {
+                tbody += '<td class="text-center">' + grandTotalQty[m] + '</td><td class="text-center">' + grandTotalFee[m].toLocaleString() + '</td>';
+            }
+        });
+        tbody += '</tr>';
+    }
 
-    if (!hasData) tbody = '<tr><td colspan="' + (2 + months.length * 2) + '" class="text-center text-muted py-4">该时间段内无计费记录</td></tr>';
+    var activeMonthsCount = months.filter(function(m) { return grandTotalQty[m] > 0; }).length;
+    if (!hasData) tbody = '<tr><td colspan="' + (2 + activeMonthsCount * 2) + '" class="text-center text-muted py-4">该时间段内无计费记录</td></tr>';
     document.getElementById('storage-fee-tbody').innerHTML = tbody;
 }
 
