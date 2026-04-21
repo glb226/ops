@@ -426,6 +426,15 @@
     <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveWarehouseOp()">保存</button></div>
 </div></div></div>
 
+<div class="modal fade" id="outboundModal"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h6 class="modal-title">设备出库</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <p class="mb-2" id="outbound-info"></p>
+        <div class="mb-2"><label class="small">出库日期</label><input type="date" class="form-control form-control-sm" id="outbound-date"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="confirmOutbound()">确认出库</button></div>
+</div></div></div>
+
 <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -451,6 +460,7 @@ let whRecords = [];
 let whPage = 1;
 const WH_PAGE_SIZE = 50;
 let currentWhOp = 'in';
+let currentOutboundId = null;
 const WH_NAME_MAP = {
     '现金自助设备': ['OKI存取款机', 'OKI大堂ATM', '奔腾达零钞机', '大额存取款机', '东信取款机', '广电ATM', '日立存取款机'],
     '自助设备': ['VR一体机', '壁挂式燃气机', '穿墙式燃气机', '存折机', '发卡机', '回单机', '火车售票机', '立式燃气机', '立式网银机', '照片机', '智能柜台'],
@@ -851,9 +861,23 @@ function saveWarehouseOp() {
 function outboundWhRecord(id) {
     var r = whRecords.find(function(x) { return x.id === id; });
     if (!r) return;
+    currentOutboundId = id;
+    document.getElementById('outbound-info').textContent = r.name + '（' + r.category + '）× ' + r.qty + '台';
+    document.getElementById('outbound-date').value = new Date().toISOString().slice(0, 10);
+    new bootstrap.Modal(document.getElementById('outboundModal')).show();
+}
+
+function confirmOutbound() {
+    if (currentOutboundId === null) return;
+    var r = whRecords.find(function(x) { return x.id === currentOutboundId; });
+    if (!r) return;
+    var outDate = document.getElementById('outbound-date').value;
+    if (!outDate) { alert('请选择出库日期'); return; }
     r.status = '已出库';
-    r.outDate = new Date().toISOString().slice(0, 10);
+    r.outDate = outDate;
     saveWarehouseRecords();
+    bootstrap.Modal.getInstance(document.getElementById('outboundModal')).hide();
+    currentOutboundId = null;
     renderWarehouse();
 }
 
