@@ -872,8 +872,9 @@ function renderWarehouse() {
         var statusHtml = r.status === '已出库' ? '<span class="text-danger">已出库</span>' : '<span class="text-success">在库</span>';
         var outDateHtml = r.outDate || '-';
         var actionHtml = r.status === '在库'
-            ? '<button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="outboundWhRecord(' + r.id + ')">出库</button>'
-            : '-';
+            ? '<button class="btn btn-outline-danger btn-sm py-0 px-1 me-1" onclick="outboundWhRecord(' + r.id + ')">出库</button>'
+            : '<span class="text-muted me-1">-</span>';
+        actionHtml += '<button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="deleteWhRecord(' + r.id + ')">删除</button>';
         html += '<tr><td>' + (start + i + 1) + '</td><td>' + r.inDate + '</td><td>' + r.name + '</td><td>' + r.category + '</td><td>' + r.qty + '</td><td>' + (r.remark || '') + '</td><td>' + statusHtml + '</td><td>' + outDateHtml + '</td><td>' + actionHtml + '</td></tr>';
     });
     if (!html) html = '<tr><td colspan="9" class="text-center text-muted">暂无记录</td></tr>';
