@@ -292,6 +292,13 @@
                         <thead><tr><th>序号</th><th>入库时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th><th>状态</th><th>出库时间</th><th>操作</th></tr></thead>
                         <tbody id="warehouse-table"></tbody>
                     </table>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="small text-muted" id="wh-page-info"></span>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" onclick="whPrevPage()">上一页</button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="whNextPage()">下一页</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div id="tab-storage-fee" style="display:none;">
@@ -432,6 +439,8 @@ let currentPage = 1;
 const PAGE_SIZE = 20;
 let chartVendor = null, chartResponse = null;
 let whRecords = [];
+let whPage = 1;
+const WH_PAGE_SIZE = 50;
 let currentWhOp = 'in';
 const WH_NAME_MAP = {
     '现金自助设备': ['OKI存取款机', 'OKI大堂ATM', '奔腾达零钞机', '大额存取款机', '东信取款机', '广电ATM', '日立存取款机'],
@@ -824,6 +833,7 @@ function saveWarehouseOp() {
         outDate: null
     };
     whRecords.unshift(record);
+    whPage = 1;
     saveWarehouseRecords();
     bootstrap.Modal.getInstance(document.getElementById('warehouseModal')).hide();
     renderWarehouse();
@@ -841,17 +851,34 @@ function outboundWhRecord(id) {
 function deleteWhRecord(id) { if (!confirm('确定删除此记录?')) return; whRecords = whRecords.filter(function(r) { return r.id !== id; }); saveWarehouseRecords(); renderWarehouse(); }
 
 function renderWarehouse() {
+    var total = whRecords.length;
+    var totalPages = Math.max(1, Math.ceil(total / WH_PAGE_SIZE));
+    if (whPage > totalPages) whPage = totalPages;
+    var start = (whPage - 1) * WH_PAGE_SIZE;
+    var end = start + WH_PAGE_SIZE;
+    var pageRecords = whRecords.slice(start, end);
+
     var html = '';
-    whRecords.slice(0, 200).forEach(function(r, i) {
+    pageRecords.forEach(function(r, i) {
         var statusHtml = r.status === '已出库' ? '<span class="text-danger">已出库</span>' : '<span class="text-success">在库</span>';
         var outDateHtml = r.outDate || '-';
         var actionHtml = r.status === '在库'
             ? '<button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="outboundWhRecord(' + r.id + ')">出库</button>'
             : '-';
-        html += '<tr><td>' + (i + 1) + '</td><td>' + r.inDate + '</td><td>' + r.name + '</td><td>' + r.category + '</td><td>' + r.qty + '</td><td>' + (r.remark || '') + '</td><td>' + statusHtml + '</td><td>' + outDateHtml + '</td><td>' + actionHtml + '</td></tr>';
+        html += '<tr><td>' + (start + i + 1) + '</td><td>' + r.inDate + '</td><td>' + r.name + '</td><td>' + r.category + '</td><td>' + r.qty + '</td><td>' + (r.remark || '') + '</td><td>' + statusHtml + '</td><td>' + outDateHtml + '</td><td>' + actionHtml + '</td></tr>';
     });
     if (!html) html = '<tr><td colspan="9" class="text-center text-muted">暂无记录</td></tr>';
     document.getElementById('warehouse-table').innerHTML = html;
+    document.getElementById('wh-page-info').textContent = '共 ' + total + ' 条，第 ' + whPage + '/' + totalPages + ' 页';
+}
+
+function whPrevPage() {
+    if (whPage > 1) { whPage--; renderWarehouse(); }
+}
+
+function whNextPage() {
+    var totalPages = Math.ceil(whRecords.length / WH_PAGE_SIZE);
+    if (whPage < totalPages) { whPage++; renderWarehouse(); }
 }
 
 function importWarehouseFromExcel(input) {
@@ -904,7 +931,7 @@ function importWarehouseFromExcel(input) {
                     id: Date.now() + i,
                     name: name,
                     category: category || '其它设备',
-                    qty: 1,
+                    qty: Math.abs(qty),
                     remark: String(row[6] || '').trim(),
                     inDate: dateStr,
                     status: '在库',
@@ -913,6 +940,7 @@ function importWarehouseFromExcel(input) {
                 whRecords.push(record);
                 imported++;
             }
+            whPage = 1;
             saveWarehouseRecords();
             renderWarehouse();
             alert('成功导入 ' + imported + ' 条入库记录');
@@ -927,6 +955,13 @@ function importWarehouseFromExcel(input) {
 function showWarehouseTab(tab) {
     document.getElementById('tab-warehouse').style.display = tab === 'warehouse' ? 'block' : 'none';
     document.getElementById('tab-storage-fee').style.display = tab === 'storage-fee' ? 'block' : 'none';
+    var tabs = document.querySelectorAll('#page-warehouse .nav-tabs .nav-link');
+    tabs.forEach(function(t) { t.classList.remove('active'); });
+    if (tab === 'warehouse') {
+        document.querySelector('#page-warehouse .nav-tabs .nav-link:nth-child(1)').classList.add('active');
+    } else {
+        document.querySelector('#page-warehouse .nav-tabs .nav-link:nth-child(2)').classList.add('active');
+    }
 }
 
 function calculateStorageFee() {
@@ -986,21 +1021,49 @@ function calculateStorageFee() {
         });
     });
 
-    var html = '';
+    // Build pivot table: rows = device type, cols = month
     var categories = Object.keys(WH_PRICE_MAP);
-    var hasData = false;
+    var allRows = [];
+
+    // Header row: 设备类型 | 单价 | 月份1在库 | 月份1费用 | 月份2在库 | 月份2费用 | ...
+    var headerHtml = '<tr><th>设备类型</th><th>单价(元/月)</th>';
     months.forEach(function(m) {
-        categories.forEach(function(cat) {
+        var label = m.substring(5) + '月在库';
+        var feeLabel = m.substring(5) + '月费用';
+        headerHtml += '<th style="text-align:center">' + label + '</th><th style="text-align:center">' + feeLabel + '</th>';
+    });
+    headerHtml += '</tr>';
+    allRows.push(headerHtml);
+
+    var hasData = false;
+    var totals = {};
+    months.forEach(function(m) { totals[m] = { qty: 0, fee: 0 }; });
+
+    categories.forEach(function(cat) {
+        var price = WH_PRICE_MAP[cat] || 0;
+        var rowHtml = '<tr><td>' + cat + '</td><td>' + price + '</td>';
+        months.forEach(function(m) {
             var qty = stats[m][cat] || 0;
-            if (qty <= 0) return;
-            hasData = true;
-            var price = WH_PRICE_MAP[cat] || 0;
             var fee = qty * price;
-            html += '<tr><td style="text-align:center">' + m + '</td><td>' + cat + '</td><td>' + price + '</td><td>' + qty + '</td><td>' + fee.toLocaleString() + '</td></tr>';
+            if (qty > 0) hasData = true;
+            totals[m].qty += qty;
+            totals[m].fee += fee;
+            rowHtml += '<td style="text-align:center">' + (qty > 0 ? qty : '-') + '</td><td style="text-align:right">' + (fee > 0 ? fee.toLocaleString() : '-') + '</td>';
         });
+        rowHtml += '</tr>';
+        allRows.push(rowHtml);
     });
 
-    if (!hasData) html = '<tr><td colspan="5" class="text-center text-muted">该时间段内无计费记录</td></tr>';
+    // 合计行
+    var totalRowHtml = '<tr class="table-secondary"><td><strong>合计</strong></td><td>-</td>';
+    months.forEach(function(m) {
+        var t = totals[m];
+        totalRowHtml += '<td style="text-align:center"><strong>' + (t.qty > 0 ? t.qty : '-') + '</strong></td><td style="text-align:right"><strong>' + (t.fee > 0 ? t.fee.toLocaleString() : '-') + '</strong></td>';
+    });
+    totalRowHtml += '</tr>';
+
+    var html = allRows.join('');
+    if (!hasData) html = '<tr><td colspan="' + (3 + months.length * 2) + '" class="text-center text-muted">该时间段内无计费记录</td></tr>';
     document.getElementById('storage-fee-tbody').innerHTML = html;
 }
 
