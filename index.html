@@ -837,7 +837,50 @@ function showWarehouseTab(tab) {
 }
 
 function calculateStorageFee() {
-    document.getElementById('storage-fee-tbody').innerHTML = '<tr><td colspan="5" class="text-center text-muted">功能开发中</td></tr>';
+    var startMonth = document.getElementById('sf-month-start').value;
+    var endMonth = document.getElementById('sf-month-end').value;
+    if (!startMonth || !endMonth) { alert('请选择开始和结束月份'); return; }
+
+    var start = new Date(startMonth + '-01');
+    var end = new Date(endMonth + '-01');
+    end.setMonth(end.getMonth() + 1);
+    end.setDate(0);
+
+    var months = [];
+    var cur = new Date(start);
+    while (cur <= end) {
+        months.push(cur.getFullYear() + '-' + String(cur.getMonth() + 1).padStart(2, '0'));
+        cur.setMonth(cur.getMonth() + 1);
+    }
+
+    var stats = {};
+    months.forEach(function(m) { stats[m] = {}; });
+
+    whRecords.forEach(function(r) {
+        var parts = r.date.split(/[./-]/);
+        if (parts.length < 3) return;
+        var y = parseInt(parts[0]);
+        var m = parseInt(parts[1]);
+        var key = y + '-' + String(m).padStart(2, '0');
+        if (!stats[key]) return;
+        if (!stats[key][r.category]) stats[key][r.category] = 0;
+        stats[key][r.category] += (r.type === '出库' ? -r.qty : r.qty);
+    });
+
+    var html = '';
+    var categories = Object.keys(WH_PRICE_MAP);
+    months.forEach(function(m) {
+        categories.forEach(function(cat) {
+            var qty = stats[m][cat] || 0;
+            if (qty <= 0) return;
+            var price = WH_PRICE_MAP[cat] || 0;
+            var fee = qty * price;
+            html += '<tr><td style="text-align:center">' + m + '</td><td>' + cat + '</td><td>' + price + '</td><td>' + qty + '</td><td>' + fee.toLocaleString() + '</td></tr>';
+        });
+    });
+
+    if (!html) html = '<tr><td colspan="5" class="text-center text-muted">该时间段内无在库记录</td></tr>';
+    document.getElementById('storage-fee-tbody').innerHTML = html;
 }
 
 // ========== 页面切换 ==========
