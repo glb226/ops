@@ -281,13 +281,15 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>操作</span>
                         <div>
-                            <button class="btn btn-primary btn-sm me-2" onclick="showWarehouseModal('in')">入库</button>
+                            <button class="btn btn-success btn-sm me-2" onclick="document.getElementById('wh-import-file').click()">导入台账</button>
+                            <button class="btn btn-primary btn-sm" onclick="showWarehouseModal()">入库</button>
+                            <input type="file" id="wh-import-file" accept=".xlsx,.xls" style="display:none" onchange="importWarehouseFromExcel(this)">
                         </div>
                     </div>
                 </div>
                 <div style="overflow-x:auto">
                     <table class="table table-sm table-hover">
-                        <thead><tr><th>序号</th><th>时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th><th>状态</th><th>操作</th></tr></thead>
+                        <thead><tr><th>序号</th><th>入库时间</th><th>货物名称</th><th>货物类型</th><th>数量</th><th>备注</th><th>状态</th><th>出库时间</th><th>操作</th></tr></thead>
                         <tbody id="warehouse-table"></tbody>
                     </table>
                 </div>
@@ -353,10 +355,6 @@
     <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveVendor()">保存</button></div>
 </div></div></div>
 
-<div class="modal fade" id="warehouseModal"><div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header"><h6 class="modal-title" id="wh-modal-title">入库</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-</div></div></div>
-
 <div class="modal fade" id="orgModal"><div class="modal-dialog"><div class="modal-content">
     <div class="modal-header"><h6 class="modal-title" id="org-modal-title">编辑网点</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
@@ -414,6 +412,7 @@
 
 <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="devices.js"></script>
 
 <script>
@@ -433,6 +432,7 @@ let currentPage = 1;
 const PAGE_SIZE = 20;
 let chartVendor = null, chartResponse = null;
 let whRecords = [];
+let currentWhOp = 'in';
 const WH_NAME_MAP = {
     '现金自助设备': ['OKI存取款机', 'OKI大堂ATM', '奔腾达零钞机', '大额存取款机', '东信取款机', '广电ATM', '日立存取款机'],
     '自助设备': ['VR一体机', '壁挂式燃气机', '穿墙式燃气机', '存折机', '发卡机', '回单机', '火车售票机', '立式燃气机', '立式网银机', '照片机', '智能柜台'],
@@ -801,8 +801,8 @@ function loadVendors() {
 function loadWarehouseRecords() { var data = localStorage.getItem(WH_STORAGE); whRecords = data ? JSON.parse(data) : []; }
 function saveWarehouseRecords() { localStorage.setItem(WH_STORAGE, JSON.stringify(whRecords)); }
 
-function showWarehouseModal(op) {
-    document.getElementById('wh-modal-title').textContent = op === 'in' ? '入库' : '出库';
+function showWarehouseModal() {
+    document.getElementById('wh-modal-title').textContent = '入库';
     document.getElementById('wh-type').value = '现金自助设备';
     document.getElementById('wh-name').value = '';
     document.getElementById('wh-qty').value = '1';
@@ -813,10 +813,28 @@ function showWarehouseModal(op) {
 function saveWarehouseOp() {
     var name = document.getElementById('wh-name').value.trim();
     if (!name) { alert('请输入货物名称'); return; }
-    var record = { id: Date.now(), type: '入库', name: name, category: document.getElementById('wh-type').value, qty: parseInt(document.getElementById('wh-qty').value) || 1, remark: document.getElementById('wh-remark').value.trim(), date: new Date().toLocaleDateString() };
+    var record = {
+        id: Date.now(),
+        name: name,
+        category: document.getElementById('wh-type').value,
+        qty: parseInt(document.getElementById('wh-qty').value) || 1,
+        remark: document.getElementById('wh-remark').value.trim(),
+        inDate: new Date().toISOString().slice(0, 10),
+        status: '在库',
+        outDate: null
+    };
     whRecords.unshift(record);
     saveWarehouseRecords();
     bootstrap.Modal.getInstance(document.getElementById('warehouseModal')).hide();
+    renderWarehouse();
+}
+
+function outboundWhRecord(id) {
+    var r = whRecords.find(function(x) { return x.id === id; });
+    if (!r) return;
+    r.status = '已出库';
+    r.outDate = new Date().toISOString().slice(0, 10);
+    saveWarehouseRecords();
     renderWarehouse();
 }
 
@@ -824,11 +842,86 @@ function deleteWhRecord(id) { if (!confirm('确定删除此记录?')) return; wh
 
 function renderWarehouse() {
     var html = '';
-    whRecords.slice(0, 50).forEach(function(r, i) {
-        html += '<tr><td>'+(i+1)+'</td><td>'+r.date+'</td><td>'+r.name+'</td><td>'+r.category+'</td><td>'+r.qty+'</td><td>'+(r.remark||'')+'</td><td>'+r.type+'</td><td><button class="btn btn-link btn-sm text-danger p-0" onclick="deleteWhRecord('+r.id+')">删除</button></td></tr>';
+    whRecords.slice(0, 200).forEach(function(r, i) {
+        var statusHtml = r.status === '已出库' ? '<span class="text-danger">已出库</span>' : '<span class="text-success">在库</span>';
+        var outDateHtml = r.outDate || '-';
+        var actionHtml = r.status === '在库'
+            ? '<button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="outboundWhRecord(' + r.id + ')">出库</button>'
+            : '-';
+        html += '<tr><td>' + (i + 1) + '</td><td>' + r.inDate + '</td><td>' + r.name + '</td><td>' + r.category + '</td><td>' + r.qty + '</td><td>' + (r.remark || '') + '</td><td>' + statusHtml + '</td><td>' + outDateHtml + '</td><td>' + actionHtml + '</td></tr>';
     });
-    if (!html) html = '<tr><td colspan="8" class="text-center text-muted">暂无记录</td></tr>';
+    if (!html) html = '<tr><td colspan="9" class="text-center text-muted">暂无记录</td></tr>';
     document.getElementById('warehouse-table').innerHTML = html;
+}
+
+function importWarehouseFromExcel(input) {
+    var file = input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            var data = new Uint8Array(e.target.result);
+            var workbook = XLSX.read(data, { type: 'array', cellDates: true });
+            var sheetName = workbook.SheetNames[0];
+            var sheet = workbook.Sheets[sheetName];
+            var json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+            var imported = 0;
+            for (var i = 2; i < json.length; i++) { // Skip header row (row 0) and sub-header (row 1)
+                var row = json[i];
+                if (!row || row.length < 6) continue;
+                var seq = row[0];          // 序号
+                var opType = String(row[1]).trim();   // 入库/出库
+                var opDate = row[2];       // 操作时间
+                var name = String(row[3]).trim();     // 货物名称
+                var category = String(row[4]).trim(); // 货物类型
+                var qty = parseInt(row[5]) || 1;      // 数量
+
+                // Skip rows with no name or invalid data
+                if (!name || name === '') continue;
+                // Skip 出库 rows in Excel (出库 is done manually via button)
+                if (opType === '出库') continue;
+                // Skip rows with negative quantity (shouldn't happen for 入库 but just in case)
+                if (qty < 0) continue;
+
+                // Format date: if it's a Date object, convert to YYYY-MM-DD
+                var dateStr = opDate;
+                if (typeof opDate === 'number') {
+                    // Excel date serial number - convert
+                    var d = new Date((opDate - 25569) * 86400 * 1000);
+                    dateStr = d.toISOString().slice(0, 10);
+                } else if (opDate instanceof Date) {
+                    dateStr = opDate.toISOString().slice(0, 10);
+                } else if (typeof opDate === 'string') {
+                    // Try to parse YYYY.MM.DD format
+                    var parts = opDate.split(/[./-]/);
+                    if (parts.length === 3) {
+                        dateStr = parts[0] + '-' + String(parseInt(parts[1])).padStart(2, '0') + '-' + String(parseInt(parts[2])).padStart(2, '0');
+                    }
+                }
+
+                var record = {
+                    id: Date.now() + i,
+                    name: name,
+                    category: category || '其它设备',
+                    qty: 1,
+                    remark: String(row[6] || '').trim(),
+                    inDate: dateStr,
+                    status: '在库',
+                    outDate: null
+                };
+                whRecords.push(record);
+                imported++;
+            }
+            saveWarehouseRecords();
+            renderWarehouse();
+            alert('成功导入 ' + imported + ' 条入库记录');
+        } catch (err) {
+            alert('导入失败: ' + err.message);
+        }
+        input.value = '';
+    };
+    reader.readAsArrayBuffer(file);
 }
 
 function showWarehouseTab(tab) {
@@ -857,29 +950,57 @@ function calculateStorageFee() {
     months.forEach(function(m) { stats[m] = {}; });
 
     whRecords.forEach(function(r) {
-        var parts = r.date.split(/[./-]/);
-        if (parts.length < 3) return;
-        var y = parseInt(parts[0]);
-        var m = parseInt(parts[1]);
-        var key = y + '-' + String(m).padStart(2, '0');
-        if (!stats[key]) return;
-        if (!stats[key][r.category]) stats[key][r.category] = 0;
-        stats[key][r.category] += (r.type === '出库' ? -r.qty : r.qty);
+        var inDate = r.inDate;
+        if (!inDate) return;
+        var inParts = inDate.split(/[./-]/);
+        if (inParts.length < 3) return;
+        var inY = parseInt(inParts[0]);
+        var inM = parseInt(inParts[1]);
+        var inD = parseInt(inParts[2]);
+
+        var outDate = r.outDate;
+        var outY = null, outM = null, outD = null;
+        if (outDate) {
+            var outParts = outDate.split(/[./-]/);
+            if (outParts.length >= 3) {
+                outY = parseInt(outParts[0]);
+                outM = parseInt(outParts[1]);
+                outD = parseInt(outParts[2]);
+            }
+        }
+
+        var cat = r.category || '其它设备';
+
+        months.forEach(function(m) {
+            var parts = m.split('-');
+            var y = parseInt(parts[0]);
+            var month = parseInt(parts[1]);
+            var day15 = new Date(y, month - 1, 15);
+            var inDateThisMonth = new Date(inY, inM - 1, inD);
+            var outDateThisMonth = outY !== null ? new Date(outY, outM - 1, outD) : null;
+
+            if (inDateThisMonth <= day15 && (outDateThisMonth === null || outDateThisMonth > day15)) {
+                if (!stats[m][cat]) stats[m][cat] = 0;
+                stats[m][cat] += r.qty || 1;
+            }
+        });
     });
 
     var html = '';
     var categories = Object.keys(WH_PRICE_MAP);
+    var hasData = false;
     months.forEach(function(m) {
         categories.forEach(function(cat) {
             var qty = stats[m][cat] || 0;
             if (qty <= 0) return;
+            hasData = true;
             var price = WH_PRICE_MAP[cat] || 0;
             var fee = qty * price;
             html += '<tr><td style="text-align:center">' + m + '</td><td>' + cat + '</td><td>' + price + '</td><td>' + qty + '</td><td>' + fee.toLocaleString() + '</td></tr>';
         });
     });
 
-    if (!html) html = '<tr><td colspan="5" class="text-center text-muted">该时间段内无在库记录</td></tr>';
+    if (!hasData) html = '<tr><td colspan="5" class="text-center text-muted">该时间段内无计费记录</td></tr>';
     document.getElementById('storage-fee-tbody').innerHTML = html;
 }
 
@@ -891,7 +1012,7 @@ function showPage(page) {
     if (page === 'workorders') renderWorkorders();
     else if (page === 'dashboard') renderDashboard();
     else if (page === 'vendors') renderVendors();
-    else if (page === 'warehouse') renderWarehouse();
+    else if (page === 'warehouse') { renderWarehouse(); showWarehouseTab('warehouse'); }
     else if (page === 'devices') { renderOrgs(); updateDeviceOrgSelect(); }
 }
 
