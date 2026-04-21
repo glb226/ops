@@ -963,9 +963,9 @@ function showWarehouseTab(tab) {
     var tabs = document.querySelectorAll('#page-warehouse .nav-tabs .nav-link');
     tabs.forEach(function(t) { t.classList.remove('active'); });
     if (tab === 'warehouse') {
-        document.querySelector('#page-warehouse .nav-tabs .nav-link:nth-child(1)').classList.add('active');
+        document.querySelector('#page-warehouse .nav-tabs li:nth-child(1) .nav-link').classList.add('active');
     } else {
-        document.querySelector('#page-warehouse .nav-tabs .nav-link:nth-child(2)').classList.add('active');
+        document.querySelector('#page-warehouse .nav-tabs li:nth-child(2) .nav-link').classList.add('active');
     }
 }
 
@@ -987,9 +987,17 @@ function calculateStorageFee() {
     }
 
     // Update report title
-    var startLabel = parseInt(startMonth.substring(5)) + '月';
-    var endLabel = parseInt(endMonth.substring(5)) + '月';
-    document.getElementById('sf-report-title').textContent = '统计时间：' + startMonth.substring(0, 4) + '年' + startLabel + ' - ' + endLabel;
+    var startYear = startMonth.substring(0, 4);
+    var endYear = endMonth.substring(0, 4);
+    var startMonthNum = parseInt(startMonth.substring(5));
+    var endMonthNum = parseInt(endMonth.substring(5));
+    var title;
+    if (startYear === endYear) {
+        title = '统计时间：' + startYear + '年' + startMonthNum + '月至' + endMonthNum + '月';
+    } else {
+        title = '统计时间：' + startYear + '年' + startMonthNum + '月至' + endYear + '年' + endMonthNum + '月';
+    }
+    document.getElementById('sf-report-title').textContent = title;
 
     var stats = {};
     months.forEach(function(m) { stats[m] = {}; });
