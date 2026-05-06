@@ -172,13 +172,25 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-4"><div class="text-muted small">本月</div><h5 id="month-total">0</h5></div>
-                        <div class="col-4"><div class="text-success small">完成</div><h5 class="text-success" id="month-done">0</h5></div>
-                        <div class="col-4"><div class="text-warning small">未完成</div><h5 class="text-warning clickable-num" id="month-pending" onclick="showPendingDetails()">0</h5></div>
-                        <div class="col-4 mt-2"><div class="text-muted small">本周</div><h5 id="week-total">0</h5></div>
-                        <div class="col-4 mt-2"><div class="text-success small">完成</div><h5 class="text-success" id="week-done">0</h5></div>
-                        <div class="col-4 mt-2"><div class="text-warning small">未完成</div><h5 class="text-warning clickable-num" id="week-pending" onclick="showPendingDetails()">0</h5></div>
+                    <div class="row text-center g-0">
+                        <div class="col-4 border-end">
+                            <div class="text-muted small mb-1">本月</div>
+                            <div class="row g-0">
+                                <div class="col"><div class="text-success small">完成</div><h5 class="text-success mb-1" id="month-done">0</h5></div>
+                                <div class="col"><div class="text-warning small">未完成</div><h5 class="text-warning mb-1 clickable-num" id="month-pending" onclick="showPendingDetails()">0</h5></div>
+                            </div>
+                        </div>
+                        <div class="col-4 border-end">
+                            <div class="text-muted small mb-1">本周</div>
+                            <div class="row g-0">
+                                <div class="col"><div class="text-success small">完成</div><h5 class="text-success mb-1" id="week-done">0</h5></div>
+                                <div class="col"><div class="text-warning small">未完成</div><h5 class="text-warning mb-1 clickable-num" id="week-pending" onclick="showPendingDetails()">0</h5></div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-muted small mb-1">长尾工单（>168h）</div>
+                            <h5 class="text-danger mb-0 clickable-num" id="long-tail-count" onclick="showLongTailDetails()">0</h5>
+                        </div>
                     </div>
                     <div class="text-center mt-2 border-top pt-2"><span class="text-muted">平均响应:</span> <strong id="avg-response">0h</strong></div>
                 </div>
@@ -534,19 +546,25 @@ function generateOrderNo() {
 }
 
 function detectDevice(text) {
-    var t = text.toUpperCase();
-    if (t.indexOf('ATM') >= 0 || t.indexOf('取款机') >= 0 || t.indexOf('存取款') >= 0) return '存取款一体机/ATM';
-    if (t.indexOf('高速') >= 0 && t.indexOf('大额') >= 0) return '高速大额存取款机';
-    if (t.indexOf('回单') >= 0 || t.indexOf('自助终端') >= 0) return '回单机/自助终端';
-    if (t.indexOf('综合版') >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '综合版智能柜台';
-    if (t.indexOf('标准版') >= 0 && (t.indexOf('智能柜台') >= 0 || t.indexOf('柜台') >= 0)) return '标准版智能柜台';
-    if (t.indexOf('LED') >= 0 || t.indexOf('走字屏') >= 0) return '网银一体机/LED走字屏';
-    if (t.indexOf('空调') >= 0) return '空调维护';
-    if (t.indexOf('叫号') >= 0 || t.indexOf('宣传屏') >= 0) return '叫号机/宣传屏';
-    if (t.indexOf('征信') >= 0 || t.indexOf('查询机') >= 0) return '征信查询机';
-    if (t.indexOf('安防') >= 0 || t.indexOf('监控') >= 0) return '安防';
-    if (t.indexOf('网络') >= 0 || t.indexOf('路由器') >= 0) return '网络设备';
-    if (t.indexOf('零星') >= 0 || t.indexOf('锁') >= 0) return '零星维修';
+    var t = text;
+    // 按优先级从高到低，匹配最具体的设备类型
+    if (t.includes('高速') && t.includes('大额') && (t.includes('存取款') || t.includes('取款'))) return '高速大额存取款机';
+    if (t.includes('存取款') || t.includes('大额存取款')) return '高速大额存取款机';
+    if (t.includes('ATM') && !t.includes('区域') && (t.includes('机') || t.includes('设备') || t.includes('维护') || t.includes('故障') || t.includes('维修') || t.includes('保养') || t.includes('更换') || t.includes('取款') || t.includes('存款') || t.includes('吞卡'))) return '存取款一体机/ATM';
+    if (t.includes('ATM') && !t.includes('区域') && !t.includes('机房')) return '存取款一体机/ATM';
+    if (t.includes('ATM机房') && t.includes('空调')) return '空调维护';
+    if (t.includes('回单') || (t.includes('自助') && t.includes('终端'))) return '回单机/自助终端';
+    if (t.includes('综合版') && (t.includes('智能柜台') || t.includes('柜台'))) return '综合版智能柜台';
+    if (t.includes('标准版') && (t.includes('智能柜台') || t.includes('柜台'))) return '标准版智能柜台';
+    if (t.includes('LED') || (t.includes('网银') && t.includes('走字屏'))) return '网银一体机/LED走字屏';
+    if (t.includes('空调') && !t.includes('空调外机')) return '空调维护';
+    if (t.includes('空调外机')) return '大型设备';
+    if (t.includes('叫号') || (t.includes('宣传') && t.includes('屏'))) return '叫号机/宣传屏';
+    if (t.includes('征信') || t.includes('查询机')) return '征信查询机';
+    if (t.includes('安防') || t.includes('监控')) return '安防';
+    if (t.includes('网络') || t.includes('路由器') || t.includes('交换机')) return '网络设备';
+    if (t.includes('零星') || t.includes('维修') || t.includes('锁') || t.includes('门') || t.includes('电工') || t.includes('灯') || t.includes('照明') || t.includes('电路') || t.includes('插座') || t.includes('开关') || t.includes('灯管') || t.includes('灯盘') || t.includes('灯带') || t.includes('灯片') || t.includes('开关') || t.includes('跳闸') || t.includes('断路器') || t.includes('电表') || t.includes('水龙头') || t.includes('水管') || t.includes('疏通') || t.includes('下水道') || t.includes('排污')) return '零星维修';
+    if (t.includes('VR') || t.includes('一体机') || t.includes('壁挂式燃气机') || t.includes('穿墙式燃气机') || t.includes('立式燃气机') || t.includes('存折机') || t.includes('发卡机') || t.includes('照片机') || t.includes('火车售票机')) return '自助设备';
     return '其他';
 }
 
@@ -564,9 +582,10 @@ function analyzeWorkorder() {
         else { person = pp; }
     }
     if (!phone) { var allText = i.replace(/\s+/g, ''); var m2 = allText.match(/(\d{11})/); if (m2) phone = m2[1]; }
-    var d2 = i.match(/具体报修项目[：:]\s*(.+?)(?:\n|$)/);
+    var d2 = i.match(/具体报修项[：:]\s*(.+?)(?=报修部门|报修人|地址|具体报修|$)/s);
     if (d2) desc = d2[1].trim();
-    if (!desc) { var d3 = i.match(/故障描述[：:]\s*(.+?)(?:\n|$)/i); if (d3) desc = d3[1].trim(); }
+    if (!desc) { var d3 = i.match(/故障描述[：:]\s*(.+?)(?=报修部门|报修人|地址|具体报修|$)/s); if (d3) desc = d3[1].trim(); }
+    if (!desc) { var d4 = i.match(/具体报修项目[：:]\s*(.+?)$/s); if (d4) desc = d4[1].trim(); }
     device = detectDevice(i);
     document.getElementById('edit-dept').value = dept || '';
     document.getElementById('edit-person').value = person || '';
@@ -581,7 +600,8 @@ function analyzeWorkorder() {
 function onDeviceChange() {
     var d = document.getElementById('edit-device').value;
     var s = document.getElementById('edit-vendor');
-    if (d === '其他' || d === '网络设备') { s.innerHTML = '<option value="其他">其他</option>'; }
+    var exclude = ['其他', '网络设备', '大型设备'];
+    if (exclude.indexOf(d) >= 0) { s.innerHTML = '<option value="其他">其他</option>'; }
     else { var vendor = deviceVendorMap[d] || '其他'; s.innerHTML = '<option value="'+vendor+'">'+vendor+'</option>'; }
 }
 
@@ -735,16 +755,34 @@ function showPendingDetails() {
     new bootstrap.Modal(document.getElementById('pendingModal')).show();
 }
 
+function showLongTailDetails() {
+    var longTail = workorders.filter(function(o) {
+        return o.status !== '已完成' && (new Date() - new Date(o.create_time)) > 168 * 3600000;
+    });
+    longTail.sort(function(a, b) { return new Date(a.create_time) - new Date(b.create_time); });
+    var html = '';
+    if (longTail.length > 0) {
+        html = '<table class="table table-sm"><thead><tr><th>工单号</th><th>机构</th><th>设备</th><th>创建时间</th><th>时长</th></tr></thead><tbody>';
+        longTail.forEach(function(o) {
+            var days = Math.floor((new Date() - new Date(o.create_time)) / 86400000);
+            var hours = Math.floor(((new Date() - new Date(o.create_time)) % 86400000) / 3600000);
+            var duration = days > 0 ? days + '天' + hours + '小时' : hours + '小时';
+            html += '<tr><td>'+o.id+'</td><td>'+o.dept+'</td><td>'+o.device+'</td><td>'+new Date(o.create_time).toLocaleString()+'</td><td><strong class="text-danger">'+duration+'</strong></td></tr>';
+        });
+        html += '</tbody></table>';
+    } else { html = '<p class="text-center text-muted">暂无长尾工单</p>'; }
+    document.getElementById('pending-content').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('pendingModal')).show();
+}
+
 function renderDashboard() {
     var now = new Date();
     var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     var weekAgo = new Date(now.getTime() - 7 * 86400000);
     var mo = workorders.filter(function(o) { return new Date(o.create_time) >= monthStart; });
     var wo = workorders.filter(function(o) { return new Date(o.create_time) >= weekAgo; });
-    document.getElementById('month-total').textContent = mo.length;
     document.getElementById('month-done').textContent = mo.filter(function(o) { return o.status === '已完成'; }).length;
     document.getElementById('month-pending').textContent = mo.filter(function(o) { return o.status !== '已完成'; }).length;
-    document.getElementById('week-total').textContent = wo.length;
     document.getElementById('week-done').textContent = wo.filter(function(o) { return o.status === '已完成'; }).length;
     document.getElementById('week-pending').textContent = wo.filter(function(o) { return o.status !== '已完成'; }).length;
     var done = workorders.filter(function(o) { return o.status === '已完成' && o.complete_time; });
@@ -756,6 +794,10 @@ function renderDashboard() {
         var m = Math.floor((avg % 3600000) / 60000);
         document.getElementById('avg-response').textContent = h + 'h' + m + 'm';
     } else { document.getElementById('avg-response').textContent = '0h'; }
+    var longTail = workorders.filter(function(o) {
+        return o.status !== '已完成' && (new Date() - new Date(o.create_time)) > 168 * 3600000;
+    });
+    document.getElementById('long-tail-count').textContent = longTail.length;
     var vm = {};
     workorders.forEach(function(o) { var v = o.vendor || '未知'; vm[v] = (vm[v] || 0) + 1; });
     if (window.chartVendor) window.chartVendor.destroy();
