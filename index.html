@@ -519,6 +519,7 @@ function init() {
     loadWorkorders();
     loadVendors();
     loadWarehouseRecords();
+    autoSyncFromGist();  // 自动从云端拉取，无需手动点击同步按钮
     updateVendorFilter();
     renderWorkorders();
     renderDashboard();
@@ -1226,14 +1227,46 @@ async function syncFromGist() {
     btn.disabled = true; btn.innerText = '📡 正在拉取数据...';
     try {
         var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
         var content = JSON.parse(data.files['workorders.json'].content);
-        content.forEach(function(n) { if(!workorders.some(function(o) { return o.id === n.id; })) workorders.unshift(n); });
+        var newCount = mergeGistWorkorders(content);
         saveWorkorders();
         renderWorkorders();
-        alert('🎉 同步完毕，加载成功！');
+        renderDashboard();
+        alert('🎉 同步完毕，加载' + newCount + '条新工单！');
     } catch(err) { alert('同步失败：' + err.message); }
     finally { btn.disabled = false; btn.innerText = oldText; }
+}
+
+// 自动从云端拉取（静默，不弹窗）
+async function autoSyncFromGist() {
+    try {
+        var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID);
+        if (!res.ok) return;
+        var data = await res.json();
+        var content = JSON.parse(data.files['workorders.json'].content);
+        var newCount = mergeGistWorkorders(content);
+        if (newCount > 0) {
+            saveWorkorders();
+            renderWorkorders();
+            renderDashboard();
+        }
+    } catch(err) {
+        console.log('自动同步未完成（可手动点击同步按钮）：' + err.message);
+    }
+}
+
+// 合并Gist工单到本地，返回新增数量
+function mergeGistWorkorders(gistOrders) {
+    var newCount = 0;
+    gistOrders.forEach(function(n) {
+        if (!workorders.some(function(o) { return o.id === n.id; })) {
+            workorders.unshift(n);
+            newCount++;
+        }
+    });
+    return newCount;
 }
 
 async function uploadToGist(showMsg, callback) {
