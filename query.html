@@ -257,6 +257,7 @@
             .tab-btn { font-size: 14px; padding: 12px 8px; }
         }
     </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -298,6 +299,41 @@
     </div>
 
     <script>
+        // ========== 加密解密工具 (查询页面 - 仅解密) ==========
+        const ENC_PREFIX = 'ENC:';
+        const ENC_KEY_NAME = 'encryption_key';
+
+        function getEncKey() { return localStorage.getItem(ENC_KEY_NAME) || ""; }
+        function hasEncKey() { return !!getEncKey(); }
+
+        function decryptField(val) {
+            if (!val) return val;
+            if (typeof val !== 'string') return val;
+            if (val.indexOf(ENC_PREFIX) === 0) {
+                if (!hasEncKey()) return '***';
+                try {
+                    var key = getEncKey();
+                    var cipher = val.substring(ENC_PREFIX.length);
+                    var bytes = CryptoJS.AES.decrypt(cipher, key);
+                    var plain = bytes.toString(CryptoJS.enc.Utf8);
+                    return plain || '***';
+                } catch(e) { return '***'; }
+            }
+            return val;
+        }
+
+        function decryptWorkorder(order) {
+            order.phone = decryptField(order.phone);
+            order.person = decryptField(order.person);
+            return order;
+        }
+
+        function decryptVendor(v) {
+            v.phone = decryptField(v.phone);
+            v.contact = decryptField(v.contact);
+            return v;
+        }
+
         const FIXED_GIST_ID = '9ae11536cf7304baed38841a47c39385';
         let workorders = [];
         let currentTab = 'order';
@@ -311,6 +347,7 @@
                     const vendors = JSON.parse(saved);
                     const vendorMap = {};
                     vendors.forEach(function(v) {
+                        decryptVendor(v);
                         if (!vendorMap[v.vendor]) {
                             vendorMap[v.vendor] = { contact: v.contact, phone: v.phone };
                         }
@@ -400,6 +437,7 @@
                 if (content) {
                     const newData = JSON.parse(content);
                     workorders = newData;
+                    workorders.forEach(function(o) { decryptWorkorder(o); });
                     localStorage.setItem('workorders_query', JSON.stringify(workorders));
                     renderResults(workorders);
                     if (!silent) showSyncStatus('数据已更新: ' + new Date().toLocaleTimeString() + ' (' + workorders.length + '条工单)');
@@ -449,6 +487,7 @@
             
             let html = '';
             orders.forEach(order => {
+                decryptWorkorder(order);
                 const date = new Date(order.create_time).toLocaleDateString('zh-CN');
                 const desc = order.description || order.desc || '暂无描述';
                 const status = order.status || '响应中';
@@ -1469,7 +1508,7 @@ const deviceData = {
             // 专属设备在前
             if (arr && arr.length > 0) {
                 arr.forEach((i, idx) => { 
-                    h += '<tr><td>' + serial + '</td><td>' + i.设备类型 + '</td><td>' + i.设备品牌 + '</td><td>' + i.设备维护商 + '</td><td>' + i.维护负责人 + '</td><td>' + i.联系方式 + '</td><td style="color:#e65100;font-weight:bold">桂银安保APP报修</td></tr>'; 
+                    h += '<tr><td>' + serial + '</td><td>' + i.设备类型 + '</td><td>' + i.设备品牌 + '</td><td>' + i.设备维护商 + '</td><td>' + decryptField(i.维护负责人) + '</td><td>' + decryptField(i.联系方式) + '</td><td style="color:#e65100;font-weight:bold">桂银安保APP报修</td></tr>'; 
                     serial++;
                 });
             }
@@ -1480,7 +1519,7 @@ const deviceData = {
                 if (i.设备类型 === '征信查询机' && !creditMachineBranches.includes(matchedName)) {
                     return;
                 }
-                h += '<tr><td>' + serial + '</td><td>' + i.设备类型 + '</td><td>' + i.设备品牌 + '</td><td>' + i.设备维护商 + '</td><td>' + i.维护负责人 + '</td><td>' + i.联系方式 + '</td><td style="color:#1976d2;font-weight:bold">分行后勤维修群报修</td></tr>'; 
+                h += '<tr><td>' + serial + '</td><td>' + i.设备类型 + '</td><td>' + i.设备品牌 + '</td><td>' + i.设备维护商 + '</td><td>' + decryptField(i.维护负责人) + '</td><td>' + decryptField(i.联系方式) + '</td><td style="color:#1976d2;font-weight:bold">分行后勤维修群报修</td></tr>'; 
                 serial++;
             });
             

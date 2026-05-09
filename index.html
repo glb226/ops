@@ -351,6 +351,11 @@
                 <label class="small fw-bold mb-2">GitHub Token</label>
                 <input type="password" class="form-control mb-3" id="github-token-input" placeholder="输入 GitHub Token (ghp_xxx)">
                 <button class="btn btn-primary btn-sm" onclick="saveGithubToken()">保存 Token</button>
+                <hr>
+                <label class="small fw-bold mb-2">数据加密密钥</label>
+                <input type="password" class="form-control mb-2" id="enc-key-input" placeholder="输入团队共享密钥">
+                <p class="text-muted small">所有团队成员必须使用相同的密钥。未配置时敏感数据将显示为 ***</p>
+                <button class="btn btn-primary btn-sm" onclick="saveEncKey()">保存密钥</button>
             </div>
         </div>
     </div>
@@ -447,12 +452,68 @@
     <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="confirmOutbound()">确认出库</button></div>
 </div></div></div>
 
+<script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="devices.js"></script>
 
 <script>
+// ========== 加密工具 ==========
+const ENC_PREFIX = 'ENC:';
+const ENC_KEY_NAME = 'encryption_key';
+
+function getEncKey() { return localStorage.getItem(ENC_KEY_NAME) || ""; }
+function hasEncKey() { return !!getEncKey(); }
+
+function encryptField(val) {
+	if (!val || !hasEncKey()) return val;
+	var key = getEncKey();
+	return ENC_PREFIX + CryptoJS.AES.encrypt(String(val), key).toString();
+}
+
+function decryptField(val) {
+	if (!val) return val;
+	if (typeof val !== 'string') return val;
+	if (val.indexOf(ENC_PREFIX) === 0) {
+		if (!hasEncKey()) return '***';
+		try {
+			var key = getEncKey();
+			var cipher = val.substring(ENC_PREFIX.length);
+			var bytes = CryptoJS.AES.decrypt(cipher, key);
+			var plain = bytes.toString(CryptoJS.enc.Utf8);
+			return plain || '***';
+		} catch(e) { return '***'; }
+	}
+	return val;
+}
+
+function encryptWorkorder(order) {
+	if (!hasEncKey()) return order;
+	order.phone = encryptField(order.phone);
+	order.person = encryptField(order.person);
+	return order;
+}
+
+function decryptWorkorder(order) {
+	order.phone = decryptField(order.phone);
+	order.person = decryptField(order.person);
+	return order;
+}
+
+function encryptVendor(v) {
+	if (!hasEncKey()) return v;
+	v.phone = encryptField(v.phone);
+	v.contact = encryptField(v.contact);
+	return v;
+}
+
+function decryptVendor(v) {
+	v.phone = decryptField(v.phone);
+	v.contact = decryptField(v.contact);
+	return v;
+}
+
 // ========== 配置 ==========
 const STORAGE_KEY = 'workorders_local';
 const WH_STORAGE = 'warehouse_records';
@@ -521,6 +582,7 @@ function init() {
     loadWarehouseRecords();
     autoSyncFromGist();  // 自动从云端拉取，无需手动点击同步按钮
     updateVendorFilter();
+    if (hasEncKey()) { var ek = document.getElementById('enc-key-input'); if (ek) ek.value = getEncKey(); }
     renderWorkorders();
     renderDashboard();
     renderVendors();
@@ -533,12 +595,15 @@ function loadWorkorders() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) { try { workorders = JSON.parse(saved); } catch(e) { workorders = []; } }
     else { workorders = []; }
+    if (hasEncKey()) { workorders.forEach(function(o) { decryptWorkorder(o); }); }
 }
 
 function saveWorkorders() { 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(workorders)); 
+    var toSave = workorders.slice();
+    if (hasEncKey()) { toSave = toSave.map(function(o) { var c = Object.assign({}, o); encryptWorkorder(c); return c; }); }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave)); 
     // 同时保存到query页面使用的key
-    localStorage.setItem('workorders_query', JSON.stringify(workorders));
+    localStorage.setItem('workorders_query', JSON.stringify(toSave));
 }
 
 function generateOrderNo() {
@@ -861,11 +926,11 @@ function saveVendor() {
     updateVendorFilter();
 }
 
-function saveVendors() { localStorage.setItem('vendors_local', JSON.stringify(vendors)); localStorage.setItem('deviceVendorMap_local', JSON.stringify(deviceVendorMap)); }
+function saveVendors() { var vc = vendors.slice(); if (hasEncKey()) { vc = vc.map(function(v) { var c = Object.assign({}, v); encryptVendor(c); return c; }); } localStorage.setItem('vendors_local', JSON.stringify(vc)); localStorage.setItem('deviceVendorMap_local', JSON.stringify(deviceVendorMap)); }
 
 function loadVendors() {
     var saved = localStorage.getItem('vendors_local');
-    if (saved) { try { vendors = JSON.parse(saved); var savedMap = localStorage.getItem('deviceVendorMap_local'); if (savedMap) { try { Object.assign(deviceVendorMap, JSON.parse(savedMap)); } catch(e) {} } } catch(e) {} }
+    if (saved) { try { vendors = JSON.parse(saved); if (hasEncKey()) { vendors.forEach(function(v) { decryptVendor(v); }); } var savedMap = localStorage.getItem('deviceVendorMap_local'); if (savedMap) { try { Object.assign(deviceVendorMap, JSON.parse(savedMap)); } catch(e) {} } } catch(e) {} }
 }
 
 // ========== 仓储管理 ==========
@@ -1194,6 +1259,17 @@ function showPage(page) {
 }
 
 // ========== 云端同步 ==========
+function saveEncKey() {
+    var key = document.getElementById('enc-key-input').value.trim();
+    if (!key) { alert('请输入加密密钥'); return; }
+    if (key.length < 6) { alert('密钥长度不能少于6位'); return; }
+    localStorage.setItem(ENC_KEY_NAME, key);
+    loadWorkorders();
+    renderWorkorders();
+    renderDashboard();
+    alert('密钥已保存！请通知所有团队成员使用相同密钥。');
+}
+
 async function saveGithubToken() {
     var token = document.getElementById('github-token-input').value.trim();
     if (!token) { alert('请输入 GitHub Token'); return; }
@@ -1231,6 +1307,7 @@ async function syncFromGist() {
         var data = await res.json();
         var content = JSON.parse(data.files['workorders.json'].content);
         var newCount = mergeGistWorkorders(content);
+        if (hasEncKey()) { content.forEach(function(n) { decryptWorkorder(n); }); }
         saveWorkorders();
         renderWorkorders();
         renderDashboard();
@@ -1248,6 +1325,7 @@ async function autoSyncFromGist() {
         var content = JSON.parse(data.files['workorders.json'].content);
         var newCount = mergeGistWorkorders(content);
         if (newCount > 0) {
+            if (hasEncKey()) { content.forEach(function(n) { decryptWorkorder(n); }); }
             saveWorkorders();
             renderWorkorders();
             renderDashboard();
@@ -1277,7 +1355,9 @@ async function uploadToGist(showMsg, callback) {
         return; 
     }
     try {
-        var content = JSON.stringify(workorders, null, 2);
+        var toUpload = workorders.slice();
+        if (hasEncKey()) { toUpload = toUpload.map(function(o) { var c = Object.assign({}, o); encryptWorkorder(c); return c; }); }
+        var content = JSON.stringify(toUpload, null, 2);
         var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID, {
             method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
             body: JSON.stringify({ description: '工单数据同步', files: { 'workorders.json': { content: content } } })

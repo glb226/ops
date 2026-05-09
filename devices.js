@@ -14,13 +14,36 @@ function loadDeviceData() {
             var data = JSON.parse(saved);
             orgMap = data.orgMap || {};
             deviceData = data.deviceData || {};
+            if (typeof hasEncKey === 'function' && hasEncKey()) {
+                Object.keys(deviceData).forEach(function(code) {
+                    deviceData[code].forEach(function(d) { decryptDeviceItem(d); });
+                });
+            }
         } catch(e) {}
     }
 }
 
+function decryptDeviceItem(d) {
+    d['维护负责人'] = typeof decryptField === 'function' ? decryptField(d['维护负责人']) : d['维护负责人'];
+    d['联系方式'] = typeof decryptField === 'function' ? decryptField(d['联系方式']) : d['联系方式'];
+}
+
+function encryptDeviceItem(d) {
+    d['维护负责人'] = typeof encryptField === 'function' ? encryptField(d['维护负责人']) : d['维护负责人'];
+    d['联系方式'] = typeof encryptField === 'function' ? encryptField(d['联系方式']) : d['联系方式'];
+}
+
 // 保存到localStorage
 function saveDeviceData() {
-    localStorage.setItem(DEVICE_STORAGE_KEY, JSON.stringify({orgMap: orgMap, deviceData: deviceData}));
+    var dd = {};
+    Object.keys(deviceData).forEach(function(code) {
+        dd[code] = deviceData[code].map(function(d) {
+            var c = Object.assign({}, d);
+            if (typeof hasEncKey === 'function' && hasEncKey()) encryptDeviceItem(c);
+            return c;
+        });
+    });
+    localStorage.setItem(DEVICE_STORAGE_KEY, JSON.stringify({orgMap: orgMap, deviceData: dd}));
 }
 
 // 页面切换
