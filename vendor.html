@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>运维商工单管理</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #64b5f6 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .container { max-width: 100%; margin: 0 auto; padding: 15px; }
+
+        /* 登录页 */
+        .login-card {
+            background: #fff; border-radius: 16px; padding: 30px 24px;
+            max-width: 400px; margin: 60px auto 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        .login-card h2 { font-size: 22px; color: #1976d2; text-align: center; margin-bottom: 4px; font-weight: 700; }
+        .login-card .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 24px; }
+        .login-card label { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 4px; }
+        .login-card select, .login-card input { margin-bottom: 16px; }
+        .login-btn { width: 100%; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 10px; }
+        .login-err { color: #d32f2f; font-size: 13px; text-align: center; margin-top: 8px; display: none; }
+
+        /* 主界面头部 */
+        .header-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.15); border-radius: 12px;
+            padding: 12px 16px; margin-bottom: 12px;
+        }
+        .header-bar .vendor-name { color: #fff; font-size: 16px; font-weight: 700; }
+        .header-bar .btn-logout {
+            background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+        }
+        .header-bar .btn-logout:hover { background: rgba(255,255,255,0.3); }
+
+        /* 统计条 */
+        .stats-row {
+            display: flex; gap: 10px; margin-bottom: 12px;
+        }
+        .stat-item {
+            flex: 1; background: rgba(255,255,255,0.12); border-radius: 10px;
+            padding: 10px 8px; text-align: center; color: #fff;
+        }
+        .stat-item .count { font-size: 24px; font-weight: 700; }
+        .stat-item .label { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+
+        /* 同步状态 */
+        .sync-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; font-size: 11px; color: rgba(255,255,255,0.75);
+        }
+        .sync-bar .btn-refresh {
+            background: rgba(255,255,255,0.2); color: #fff; border: none;
+            border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer;
+        }
+
+        /* 工单卡片 */
+        .order-card {
+            background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .order-card .row-info { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .order-card .label { font-size: 11px; color: #999; }
+        .order-card .value { font-size: 14px; color: #333; font-weight: 500; }
+        .order-card .desc {
+            font-size: 14px; color: #1565c0; background: #e3f2fd; border-radius: 8px;
+            padding: 12px 14px; margin: 8px 0; line-height: 1.6;
+        }
+        .order-card .remark {
+            font-size: 12px; color: #e65100; background: #fff9c4; border-radius: 8px;
+            padding: 8px 10px; margin: 8px 0;
+        }
+
+        /* 状态标签 */
+        .status-tag {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 600;
+        }
+        .status-响应中 { background: #e3f2fd; color: #1565c0; }
+        .status-审批中 { background: #fff3e0; color: #e65100; }
+        .status-已完成 { background: #e8f5e9; color: #2e7d32; }
+
+        /* 操作按钮 */
+        .action-row {
+            display: flex; gap: 8px; margin-top: 12px; padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        .btn-status {
+            flex: 1; padding: 10px; font-size: 14px; font-weight: 600;
+            border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-accept { background: #fff3e0; color: #e65100; }
+        .btn-accept:hover { background: #ffe0b2; }
+        .btn-complete { background: #e8f5e9; color: #2e7d32; }
+        .btn-complete:hover { background: #c8e6c9; }
+        .btn-status:disabled { background: #f5f5f5 !important; color: #bbb !important; cursor: not-allowed; }
+        .status-done-text { font-size: 12px; color: #999; text-align: center; padding: 8px; }
+
+        /* 状态下拉 */
+        .status-select { font-size: 13px; font-weight: 600; border: none; border-radius: 8px; padding: 4px 8px; cursor: pointer; background: #f5f5f5; }
+        .status-select:focus { outline: 2px solid #1976d2; }
+
+        /* 备注输入 */
+        .remark-input { width: 100%; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 10px; font-size: 13px; margin-top: 4px; background: #fafafa; transition: border-color 0.2s; }
+        .remark-input:focus { border-color: #1976d2; background: #fff; outline: none; }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.8);
+        }
+        .empty-state p { margin: 4px 0; }
+
+        /* 推送状态提示 */
+        .toast-msg {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999;
+            background: #333; color: #fff; padding: 10px 24px; border-radius: 20px;
+            font-size: 14px; opacity: 0; transition: opacity 0.3s;
+        }
+        .toast-msg.show { opacity: 1; }
+
+        @media (max-width: 480px) {
+            .container { padding: 10px; }
+            .login-card { margin: 30px auto 0; padding: 24px 18px; }
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- ========== 登录界面 ========== -->
+        <div id="login-screen">
+            <div class="login-card">
+                <h2>运维商工单管理</h2>
+                <div class="subtitle">登录后可查看和管理您的工单</div>
+                <label>运维商公司</label>
+                <select class="form-select" id="login-vendor">
+                    <option value="">请选择公司...</option>
+                </select>
+                <label>登录密码</label>
+                <input type="password" class="form-control" id="login-password" placeholder="请输入密码" onkeyup="if(event.key==='Enter')doLogin()">
+                <button class="btn btn-primary login-btn" onclick="doLogin()">登 录</button>
+                <div class="login-err" id="login-error"></div>
+            </div>
+        </div>
+
+        <!-- ========== 主界面（登录后显示） ========== -->
+        <div id="main-screen" style="display:none">
+            <div class="header-bar">
+                <span class="vendor-name" id="header-vendor-name"></span>
+                <button class="btn-logout" onclick="doLogout()">退出</button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-item"><div class="count" id="stat-total">0</div><div class="label">全部工单</div></div>
+                <div class="stat-item"><div class="count" id="stat-responding">0</div><div class="label">响应中</div></div>
+                <div class="stat-item"><div class="count" id="stat-approving">0</div><div class="label">审批中</div></div>
+                <div class="stat-item"><div class="count" id="stat-done">0</div><div class="label">已完成</div></div>
+            </div>
+
+            <div class="sync-bar">
+                <span id="sync-status">准备就绪</span>
+                <button class="btn-refresh" onclick="doRefresh()" id="btn-refresh">刷新数据</button>
+            </div>
+
+            <div id="order-list"></div>
+
+            <div class="empty-state" id="empty-hint" style="display:none">
+                <p>暂无分配给您的工单</p>
+                <p style="font-size:12px;opacity:0.6">如有新工单，管理员分配后将实时同步</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-msg" id="toast"></div>
+
+    <script>
+    // ========== 加密工具（与管理端一致） ==========
+    var ENC_PREFIX = 'ENC:';
+    var ENC_KEY_NAME = 'encryption_key';
+
+    function getEncKey() { return localStorage.getItem(ENC_KEY_NAME) || ""; }
+    function hasEncKey() { return !!getEncKey(); }
+
+    function encryptField(val) {
+        if (!val || !hasEncKey()) return val;
+        return ENC_PREFIX + CryptoJS.AES.encrypt(String(val), getEncKey()).toString();
+    }
+
+    function decryptField(val) {
+        if (!val) return val;
+        if (typeof val !== 'string') return val;
+        if (val.indexOf(ENC_PREFIX) === 0) {
+            if (!hasEncKey()) return '***';
+            try {
+                var cipher = val.substring(ENC_PREFIX.length);
+                var bytes = CryptoJS.AES.decrypt(cipher, getEncKey());
+                var plain = bytes.toString(CryptoJS.enc.Utf8);
+                return plain || '***';
+            } catch(e) { return '***'; }
+        }
+        return val;
+    }
+
+    function encryptWorkorder(order) {
+        if (!hasEncKey()) return order;
+        order.phone = encryptField(order.phone);
+        order.person = encryptField(order.person);
+        return order;
+    }
+
+    function decryptWorkorder(order) {
+        order.phone = decryptField(order.phone);
+        order.person = decryptField(order.person);
+        return order;
+    }
+
+    function decryptVendor(v) {
+        v.phone = decryptField(v.phone);
+        v.contact = decryptField(v.contact);
+        return v;
+    }
+
+    // ========== 配置 ==========
+    var FIXED_GIST_ID = '9ae11536cf7304baed38841a47c39385';
+    var GIST_TOKEN_KEY = 'GITHUB_TOKEN_VAL';
+    var VENDOR_STORAGE_KEY = 'workorders_vendor';
+    var SESSION_KEY = 'vendor_session';
+
+    var currentVendor = null;      // 当前登录的运维商公司名
+    var allWorkorders = [];        // 全量工单
+    var myWorkorders = [];         // 分配给当前运维商的工单
+
+    // ========== Toast提示 ==========
+    function showToast(msg, duration) {
+        duration = duration || 2000;
+        var el = document.getElementById('toast');
+        el.textContent = msg; el.classList.add('show');
+        setTimeout(function() { el.classList.remove('show'); }, duration);
+    }
+
+    // ========== 会话管理 ==========
+    function saveSession(vendorName) {
+        localStorage.setItem(SESSION_KEY, vendorName);
+    }
+
+    function restoreSession() {
+        return localStorage.getItem(SESSION_KEY);
+    }
+
+    function clearSession() {
+        localStorage.removeItem(SESSION_KEY);
+    }
+
+    // ========== 登录 ==========
+    function loadVendorsForLogin() {
+        // 尝试从 localStorage 加载运维商列表
+        var vendors = [];
+        var saved = localStorage.getItem('vendors_local');
+        if (saved) {
+            try {
+                vendors = JSON.parse(saved);
+                if (hasEncKey()) { vendors.forEach(function(v) { decryptVendor(v); }); }
+            } catch(e) {}
+        }
+        // 如果 localStorage 无数据，使用 query.html 中的精简列表作为兜底
+        if (vendors.length === 0) {
+            vendors = [
+                { type: '', vendor: '广东奔腾达电子有限公司', contact: '', phone: '' },
+                { type: '', vendor: '广州南天电脑系统有限公司', contact: '', phone: '' },
+                { type: '', vendor: '广西百鼎科技有限责任公司', contact: '', phone: '' },
+                { type: '', vendor: '广西佳仕运网络科技有限公司', contact: '', phone: '' },
+                { type: '', vendor: '广西南宁市源申隆贸易有限公司', contact: '', phone: '' },
+                { type: '', vendor: '广西三弦建设工程有限公司', contact: '', phone: '' },
+                { type: '', vendor: '桂林宇峰电子科技有限公司', contact: '', phone: '' },
+                { type: '', vendor: '北京信立合创信息技术有限公司', contact: '', phone: '' }
+            ];
+        }
+
+        // 去重、过滤、排序（排除非真实运维商）
+        var names = {};
+        var uniqueVendors = [];
+        var SKIP_VENDORS = { '业务问题请在企业微信群反馈': true, '其他': true };
+        vendors.forEach(function(v) {
+            if (v.vendor && !names[v.vendor] && !SKIP_VENDORS[v.vendor]) {
+                names[v.vendor] = true;
+                uniqueVendors.push(v);
+            }
+        });
+        uniqueVendors.sort(function(a, b) { return a.vendor.localeCompare(b.vendor, 'zh-CN'); });
+
+        var sel = document.getElementById('login-vendor');
+        uniqueVendors.forEach(function(v) {
+            sel.innerHTML += '<option value="' + v.vendor + '">' + v.vendor + '</option>';
+        });
+
+        // 存储完整 vendor 数据供登录验证
+        sel._vendors = vendors;
+    }
+
+    function doLogin() {
+        var vendorName = document.getElementById('login-vendor').value;
+        var password = document.getElementById('login-password').value;
+        var errEl = document.getElementById('login-error');
+
+        if (!vendorName) { errEl.style.display = 'block'; errEl.textContent = '请选择运维商公司'; return; }
+        if (!password) { errEl.style.display = 'block'; errEl.textContent = '请输入密码'; return; }
+
+        // 从 vendors 数据中查找该公司的密码哈希
+        var vendors = document.getElementById('login-vendor')._vendors || [];
+        var vendorData = null;
+        for (var i = 0; i < vendors.length; i++) {
+            if (vendors[i].vendor === vendorName) { vendorData = vendors[i]; break; }
+        }
+
+        if (!vendorData || !vendorData.password) {
+            errEl.style.display = 'block';
+            errEl.textContent = '该公司尚未配置登录密码，请联系管理员';
+            return;
+        }
+
+        // SHA-256 验证
+        var inputHash = CryptoJS.SHA256(password).toString();
+        if (inputHash !== vendorData.password) {
+            errEl.style.display = 'block'; errEl.textContent = '密码错误';
+            return;
+        }
+
+        errEl.style.display = 'none';
+        currentVendor = vendorName;
+        saveSession(vendorName);
+
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-screen').style.display = 'block';
+        document.getElementById('header-vendor-name').textContent = vendorName;
+
+        if (!hasEncKey()) {
+            showToast('加密密钥未配置，敏感信息将显示为 ***', 4000);
+        }
+
+        doRefresh();
+    }
+
+    function doLogout() {
+        currentVendor = null;
+        myWorkorders = [];
+        allWorkorders = [];
+        clearSession();
+        document.getElementById('login-screen').style.display = 'block';
+        document.getElementById('main-screen').style.display = 'none';
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-error').style.display = 'none';
+    }
+
+    // ========== 数据加载与同步 ==========
+    async function syncFromGist() {
+        try {
+            var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID, {
+                signal: AbortSignal.timeout(15000)
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var data = await res.json();
+            var content = data.files['workorders.json'] && data.files['workorders.json'].content;
+            if (content) {
+                var gistOrders = JSON.parse(content);
+                // 合并：Gist 数据作为基准，本地缓存的工单如有更新状态则保留
+                mergeWorkorders(gistOrders);
+                // 加密状态下，Gist 数据是密文的，需解密才能显示
+                if (hasEncKey()) {
+                    allWorkorders.forEach(function(o) { decryptWorkorder(o); });
+                    // decryptWorkorder on already-decrypted values is idempotent
+                }
+                saveLocalWorkorders();
+                filterMyWorkorders();
+                renderStats();
+                renderOrderCards();
+                return true;
+            }
+            return false;
+        } catch(e) {
+            console.log('Gist同步失败: ' + e.message);
+            return false;
+        }
+    }
+
+    function mergeWorkorders(gistOrders) {
+        var localMap = {};
+        allWorkorders.forEach(function(o) { localMap[o.id] = o; });
+
+        gistOrders.forEach(function(gistOrder) {
+            if (localMap[gistOrder.id]) {
+                // 已存在：保留并合并到数组中对应位置
+                // gistOrder 作为权威来源（可能是其他端更新的），我们用 gistOrder 替换
+                var idx = -1;
+                for (var i = 0; i < allWorkorders.length; i++) {
+                    if (allWorkorders[i].id === gistOrder.id) { idx = i; break; }
+                }
+                if (idx >= 0) allWorkorders[idx] = gistOrder;
+            } else {
+                allWorkorders.unshift(gistOrder);
+            }
+        });
+    }
+
+    async function pushToGist(showMsg) {
+        var token = localStorage.getItem(GIST_TOKEN_KEY);
+        if (!token) {
+            showToast('未配置 GitHub Token，无法同步至云端', 3000);
+            return false;
+        }
+        try {
+            var toUpload = allWorkorders.slice();
+            if (hasEncKey()) {
+                toUpload = toUpload.map(function(o) {
+                    var c = Object.assign({}, o);
+                    encryptWorkorder(c);
+                    return c;
+                });
+            }
+            var content = JSON.stringify(toUpload, null, 2);
+            var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID, {
+                method: 'PATCH',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                signal: AbortSignal.timeout(15000),
+                body: JSON.stringify({ files: { 'workorders.json': { content: content } } })
+            });
+            if (!res.ok) {
+                if (res.status === 401) {
+                    showToast('GitHub Token 已失效，请联系管理员更新', 4000);
+                } else {
+                    showToast('同步失败 (HTTP ' + res.status + ')', 3000);
+                }
+                return false;
+            }
+            if (showMsg) showToast('状态已同步至云端', 2000);
+            return true;
+        } catch(e) {
+            showToast('网络异常，同步失败：' + e.message, 3000);
+            return false;
+        }
+    }
+
+    function loadLocalWorkorders() {
+        var saved = localStorage.getItem(VENDOR_STORAGE_KEY);
+        if (saved) {
+            try { allWorkorders = JSON.parse(saved); } catch(e) { allWorkorders = []; }
+        }
+    }
+
+    function saveLocalWorkorders() {
+        localStorage.setItem(VENDOR_STORAGE_KEY, JSON.stringify(allWorkorders));
+    }
+
+    function filterMyWorkorders() {
+        myWorkorders = [];
+        for (var i = 0; i < allWorkorders.length; i++) {
+            if (allWorkorders[i].vendor === currentVendor) {
+                myWorkorders.push(allWorkorders[i]);
+            }
+        }
+        // 状态排序：响应中 → 审批中 → 已完成，同状态按时间降序
+        var statusOrder = { '响应中': 0, '审批中': 1, '已完成': 2 };
+        myWorkorders.sort(function(a, b) {
+            var sa = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 3;
+            var sb = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 3;
+            if (sa !== sb) return sa - sb;
+            return new Date(b.create_time) - new Date(a.create_time);
+        });
+    }
+
+    // ========== 统计 ==========
+    function renderStats() {
+        var total = myWorkorders.length;
+        var responding = 0, approving = 0, done = 0;
+        myWorkorders.forEach(function(o) {
+            if (o.status === '响应中') responding++;
+            else if (o.status === '审批中') approving++;
+            else if (o.status === '已完成') done++;
+        });
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-responding').textContent = responding;
+        document.getElementById('stat-approving').textContent = approving;
+        document.getElementById('stat-done').textContent = done;
+    }
+
+    // ========== 渲染工单卡片 ==========
+    function renderOrderCards() {
+        var container = document.getElementById('order-list');
+        var emptyHint = document.getElementById('empty-hint');
+
+        if (myWorkorders.length === 0) {
+            container.innerHTML = '';
+            emptyHint.style.display = 'block';
+            return;
+        }
+        emptyHint.style.display = 'none';
+
+        var html = '';
+        myWorkorders.forEach(function(order) {
+            var date = order.create_time ? new Date(order.create_time).toLocaleDateString('zh-CN') : '-';
+            var desc = order.description || order.desc || '暂无描述';
+            var status = order.status || '响应中';
+            var dept = order.dept || '-';
+            html += '<div class="order-card">';
+            html += '<div class="row-info"><span class="value">' + dept + '</span><span class="value">' + date + '</span></div>';
+            html += '<div class="row-info"><span class="label">工单号</span><span class="value">' + order.id + '</span></div>';
+            var statusColor = status === '响应中' ? '#1565c0' : status === '审批中' ? '#e65100' : '#2e7d32';
+            html += '<div class="row-info"><span class="label">当前状态</span><select class="status-select" style="color:' + statusColor + '" onchange="updateStatus(\'' + order.id + '\', this.value)"><option value="响应中" style="color:#1565c0"' + (status==='响应中'?' selected':'') + '>响应中</option><option value="审批中" style="color:#e65100"' + (status==='审批中'?' selected':'') + '>审批中</option><option value="已完成" style="color:#2e7d32"' + (status==='已完成'?' selected':'') + '>已完成</option></select></div>';
+            html += '<div class="desc">' + desc + '</div>';
+            html += '<input type="text" class="remark-input" value="' + (order.remark || '') + '" placeholder="若费用超额或特殊情况未能及时完成请备注" onchange="updateRemark(\'' + order.id + '\', this.value)">';
+            html += '</div>';
+        });
+        container.innerHTML = html;
+    }
+
+    // ========== 备注更新 ==========
+    async function updateRemark(orderId, remark) {
+        for (var i = 0; i < allWorkorders.length; i++) {
+            if (allWorkorders[i].id === orderId) { allWorkorders[i].remark = remark; break; }
+        }
+        saveLocalWorkorders();
+        filterMyWorkorders();
+        var ok = await pushToGist(true);
+        if (!ok) { showToast('备注已本地保存，但云端同步失败', 3500); }
+        try {
+            localStorage.setItem('workorders_local', JSON.stringify(allWorkorders));
+            localStorage.setItem('workorders_query', JSON.stringify(allWorkorders));
+        } catch(e) {}
+    }
+
+    // ========== 状态更新 ==========
+    async function updateStatus(orderId, newStatus) {
+        // 找到工单
+        var found = false;
+        for (var i = 0; i < allWorkorders.length; i++) {
+            if (allWorkorders[i].id === orderId) {
+                allWorkorders[i].status = newStatus;
+                if (newStatus === '已完成') {
+                    allWorkorders[i].complete_time = new Date().toISOString();
+                }
+                found = true;
+                break;
+            }
+        }
+        if (!found) return;
+
+        // 本地保存
+        saveLocalWorkorders();
+        filterMyWorkorders();
+        renderStats();
+        renderOrderCards();
+
+        // 推送到 Gist
+        var btn = document.getElementById('btn-refresh');
+        btn.disabled = true; btn.textContent = '同步中...';
+        var ok = await pushToGist(true);
+        btn.disabled = false; btn.textContent = '刷新数据';
+
+        if (!ok) {
+            showToast('状态已在本地更新，但云端同步失败', 3500);
+        }
+
+        // 同步到管理端的 localStorage
+        try {
+            localStorage.setItem('workorders_local', JSON.stringify(allWorkorders));
+            localStorage.setItem('workorders_query', JSON.stringify(allWorkorders));
+        } catch(e) {}
+    }
+
+    // ========== 刷新 ==========
+    async function doRefresh() {
+        if (!currentVendor) return;
+        var statusEl = document.getElementById('sync-status');
+        var btn = document.getElementById('btn-refresh');
+        statusEl.textContent = '正在同步...';
+        btn.disabled = true; btn.textContent = '同步中...';
+
+        loadLocalWorkorders();
+        var gistOk = await syncFromGist();
+        if (!gistOk && allWorkorders.length === 0) {
+            statusEl.textContent = '暂无数据，请检查网络';
+        } else {
+            var time = new Date().toLocaleTimeString('zh-CN');
+            statusEl.textContent = '已更新: ' + time + ' (' + myWorkorders.length + '条工单)';
+        }
+
+        btn.disabled = false; btn.textContent = '刷新数据';
+    }
+
+    // ========== 初始化 ==========
+    function init() {
+        loadVendorsForLogin();
+
+        // 尝试恢复会话
+        var savedVendor = restoreSession();
+        if (savedVendor) {
+            document.getElementById('login-vendor').value = savedVendor;
+            document.getElementById('login-password').focus();
+        }
+
+        // 定时自动同步（2分钟）
+        setInterval(function() {
+            if (currentVendor) {
+                syncFromGist();
+                filterMyWorkorders();
+                renderStats();
+                renderOrderCards();
+            }
+        }, 2 * 60 * 1000);
+    }
+
+    init();
+    </script>
+</body>
+</html>

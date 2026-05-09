@@ -384,6 +384,7 @@
         <div class="mb-2"><label class="small">运维商</label><input type="text" class="form-control form-control-sm" id="v-vendor"></div>
         <div class="mb-2"><label class="small">联系人</label><input type="text" class="form-control form-control-sm" id="v-contact"></div>
         <div class="mb-2"><label class="small">电话</label><input type="text" class="form-control form-control-sm" id="v-phone"></div>
+        <div class="mb-2"><label class="small">登录密码 <span style="color:#999;font-weight:400">(运维商登录用)</span></label><input type="text" class="form-control form-control-sm" id="v-password" placeholder="留空则不启用登录"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-primary btn-sm" onclick="saveVendor()">保存</button></div>
 </div></div></div>
@@ -588,6 +589,7 @@ function init() {
     renderVendors();
     renderWarehouse();
     setInterval(function() { saveWorkorders(); saveWarehouseRecords(); }, 30 * 60 * 1000);
+    setInterval(function() { autoSyncFromGist(); }, 2 * 60 * 1000);
 }
 
 // ========== 工单操作 ==========
@@ -898,6 +900,7 @@ function showVendorModal(idx) {
         document.getElementById('v-vendor').value = vendors[idx].vendor;
         document.getElementById('v-contact').value = vendors[idx].contact;
         document.getElementById('v-phone').value = vendors[idx].phone;
+        document.getElementById('v-password').value = vendors[idx].password || '';
     } else {
         document.getElementById('vmodal-title').textContent = '新增运维商';
         document.getElementById('v-index').value = '';
@@ -905,6 +908,7 @@ function showVendorModal(idx) {
         document.getElementById('v-vendor').value = '';
         document.getElementById('v-contact').value = '';
         document.getElementById('v-phone').value = '';
+        document.getElementById('v-password').value = '';
     }
     new bootstrap.Modal(document.getElementById('vendorModal')).show();
 }
@@ -917,9 +921,11 @@ function saveVendor() {
     var vendor = document.getElementById('v-vendor').value.trim();
     var contact = document.getElementById('v-contact').value.trim();
     var phone = document.getElementById('v-phone').value.trim();
+    var passwordInput = document.getElementById('v-password').value.trim();
     if (!vendor) { alert('请输入运维商名称'); return; }
-    if (idx !== '') { vendors[idx] = {type: type, vendor: vendor, contact: contact, phone: phone}; deviceVendorMap[type] = vendor; }
-    else { vendors.push({type: type, vendor: vendor, contact: contact, phone: phone}); deviceVendorMap[type] = vendor; }
+    var password = passwordInput ? CryptoJS.SHA256(passwordInput).toString() : '';
+    if (idx !== '') { vendors[idx] = {type: type, vendor: vendor, contact: contact, phone: phone, password: password}; deviceVendorMap[type] = vendor; }
+    else { vendors.push({type: type, vendor: vendor, contact: contact, phone: phone, password: password}); deviceVendorMap[type] = vendor; }
     saveVendors();
     bootstrap.Modal.getInstance(document.getElementById('vendorModal')).hide();
     renderVendors();
@@ -1339,9 +1345,15 @@ async function autoSyncFromGist() {
 function mergeGistWorkorders(gistOrders) {
     var newCount = 0;
     gistOrders.forEach(function(n) {
-        if (!workorders.some(function(o) { return o.id === n.id; })) {
+        var existing = workorders.filter(function(o) { return o.id === n.id; });
+        if (existing.length === 0) {
             workorders.unshift(n);
             newCount++;
+        } else {
+            // 已有工单：同步运维商可能更新的状态、备注、完成时间
+            existing[0].status = n.status || existing[0].status;
+            existing[0].remark = n.remark !== undefined ? n.remark : existing[0].remark;
+            existing[0].complete_time = n.complete_time || existing[0].complete_time;
         }
     });
     return newCount;
