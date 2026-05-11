@@ -1486,7 +1486,7 @@ const deviceData = {
             // 添加专属设备（带专属备注）
             if (arr && arr.length > 0) {
                 arr.forEach(i => {
-                    allDevices.push({...i, 设备分类: '专属设备', 备注: '桂银安保APP报修'});
+                    allDevices.push({...i, 设备分类: '专属设备', 备注: '设备保修APP报修'});
                 });
             }
             
@@ -1508,7 +1508,7 @@ const deviceData = {
             // 专属设备在前
             if (arr && arr.length > 0) {
                 arr.forEach((i, idx) => { 
-                    h += '<tr><td>' + serial + '</td><td>' + i.设备类型 + '</td><td>' + i.设备品牌 + '</td><td>' + i.设备维护商 + '</td><td>' + decryptField(i.维护负责人) + '</td><td>' + decryptField(i.联系方式) + '</td><td style="color:#e65100;font-weight:bold">桂银安保APP报修</td></tr>'; 
+                    h += '<tr><td>' + serial + '</td><td>' + i.设备类型 + '</td><td>' + i.设备品牌 + '</td><td>' + i.设备维护商 + '</td><td>' + decryptField(i.维护负责人) + '</td><td>' + decryptField(i.联系方式) + '</td><td style="color:#e65100;font-weight:bold">设备保修APP报修</td></tr>'; 
                     serial++;
                 });
             }
