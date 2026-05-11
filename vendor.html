@@ -259,18 +259,46 @@
         localStorage.removeItem(SESSION_KEY);
     }
 
-    // ========== 登录 ==========
-    function loadVendorsForLogin() {
-        // 尝试从 localStorage 加载运维商列表
-        var vendors = [];
-        var saved = localStorage.getItem('vendors_local');
-        if (saved) {
-            try {
-                vendors = JSON.parse(saved);
-                if (hasEncKey()) { vendors.forEach(function(v) { decryptVendor(v); }); }
-            } catch(e) {}
+    // ========== 从 Gist 加载运维商数据 ==========
+    async function loadVendorsFromGist() {
+        try {
+            var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID, {
+                signal: AbortSignal.timeout(10000)
+            });
+            if (!res.ok) return [];
+            var data = await res.json();
+            var content = data.files['vendors.json'] && data.files['vendors.json'].content;
+            if (!content) return [];
+            var gistVendors = JSON.parse(content);
+            if (hasEncKey()) { gistVendors.forEach(function(v) { decryptVendor(v); }); }
+            // 同步到 localStorage，供后续快速加载
+            localStorage.setItem('vendors_local', content);
+            return gistVendors;
+        } catch(e) {
+            console.log('从云端加载运维商数据失败：' + e.message);
+            return [];
         }
-        // 如果 localStorage 无数据，使用 query.html 中的精简列表作为兜底
+    }
+
+    // ========== 登录 ==========
+    async function loadVendorsForLogin() {
+        var vendors = [];
+
+        // 1. 优先从 Gist 加载（云端数据最权威，包含密码）
+        vendors = await loadVendorsFromGist();
+
+        // 2. Gist 无数据时，读取 localStorage
+        if (vendors.length === 0) {
+            var saved = localStorage.getItem('vendors_local');
+            if (saved) {
+                try {
+                    vendors = JSON.parse(saved);
+                    if (hasEncKey()) { vendors.forEach(function(v) { decryptVendor(v); }); }
+                } catch(e) {}
+            }
+        }
+
+        // 3. 最后兜底：硬编码列表（无密码，提示用户联系管理员）
         if (vendors.length === 0) {
             vendors = [
                 { type: '', vendor: '广东奔腾达电子有限公司', contact: '', phone: '' },
@@ -297,6 +325,7 @@
         uniqueVendors.sort(function(a, b) { return a.vendor.localeCompare(b.vendor, 'zh-CN'); });
 
         var sel = document.getElementById('login-vendor');
+        sel.innerHTML = '<option value="">请选择公司...</option>';
         uniqueVendors.forEach(function(v) {
             sel.innerHTML += '<option value="' + v.vendor + '">' + v.vendor + '</option>';
         });
@@ -595,8 +624,8 @@
     }
 
     // ========== 初始化 ==========
-    function init() {
-        loadVendorsForLogin();
+    async function init() {
+        await loadVendorsForLogin();
 
         // 尝试恢复会话
         var savedVendor = restoreSession();

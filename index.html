@@ -932,7 +932,22 @@ function saveVendor() {
     updateVendorFilter();
 }
 
-function saveVendors() { var vc = vendors.slice(); if (hasEncKey()) { vc = vc.map(function(v) { var c = Object.assign({}, v); encryptVendor(c); return c; }); } localStorage.setItem('vendors_local', JSON.stringify(vc)); localStorage.setItem('deviceVendorMap_local', JSON.stringify(deviceVendorMap)); }
+function saveVendors() { var vc = vendors.slice(); if (hasEncKey()) { vc = vc.map(function(v) { var c = Object.assign({}, v); encryptVendor(c); return c; }); } localStorage.setItem('vendors_local', JSON.stringify(vc)); localStorage.setItem('deviceVendorMap_local', JSON.stringify(deviceVendorMap)); pushVendorsToGist(); }
+
+async function pushVendorsToGist() {
+    var token = localStorage.getItem(GIST_TOKEN_KEY);
+    if (!token) return;
+    try {
+        var vc = vendors.slice();
+        if (hasEncKey()) { vc = vc.map(function(v) { var c = Object.assign({}, v); encryptVendor(c); return c; }); }
+        var content = JSON.stringify(vc, null, 2);
+        await fetch('https://api.github.com/gists/' + FIXED_GIST_ID, {
+            method: 'PATCH', signal: AbortSignal.timeout(15000),
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: { 'vendors.json': { content: content } } })
+        });
+    } catch(e) { console.log('运维商数据云端同步未完成：' + e.message); }
+}
 
 function loadVendors() {
     var saved = localStorage.getItem('vendors_local');
