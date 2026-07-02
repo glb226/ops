@@ -518,12 +518,24 @@ function decryptVendor(v) {
 // ========== 配置 ==========
 const STORAGE_KEY = 'workorders_local';
 const WH_STORAGE = 'warehouse_records';
-const GIST_SET_KEY = 'GIST_ID_VAL';
 const GIST_TOKEN_KEY = 'GITHUB_TOKEN_VAL';
 const FIXED_GIST_ID = '9ae11536cf7304baed38841a47c39385';
 
-// 初始化Gist ID
-(function() { localStorage.setItem(GIST_SET_KEY, FIXED_GIST_ID); })();
+// ========== 工具函数（XSS 防护） ==========
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+// 限制 ID 仅含字母数字下划线连字符，用于内联事件处理器参数
+function safeId(s) {
+    if (s == null) return '';
+    return String(s).replace(/[^a-zA-Z0-9_-]/g, '');
+}
 
 // ========== 变量 ==========
 let workorders = [];
@@ -578,18 +590,26 @@ let vendors = [
 
 // ========== 初始化 ==========
 function init() {
-    loadWorkorders();
-    loadVendors();
-    loadWarehouseRecords();
-    autoSyncFromGist();  // 自动从云端拉取，无需手动点击同步按钮
-    updateVendorFilter();
-    if (hasEncKey()) { var ek = document.getElementById('enc-key-input'); if (ek) ek.value = getEncKey(); }
-    renderWorkorders();
-    renderDashboard();
-    renderVendors();
-    renderWarehouse();
-    setInterval(function() { saveWorkorders(); saveWarehouseRecords(); }, 30 * 60 * 1000);
-    setInterval(function() { autoSyncFromGist(); }, 2 * 60 * 1000);
+    try {
+        loadWorkorders();
+        loadVendors();
+        loadWarehouseRecords();
+        autoSyncFromGist();  // 自动从云端拉取，无需手动点击同步按钮
+        updateVendorFilter();
+        if (hasEncKey()) { var ek = document.getElementById('enc-key-input'); if (ek) ek.value = getEncKey(); }
+        renderWorkorders();
+        renderDashboard();
+        renderVendors();
+        renderWarehouse();
+        // 仅在配置了 GitHub Token 后才启用云端同步定时器；本地持久化定时器仍每 30 分钟跑一次
+        if (localStorage.getItem(GIST_TOKEN_KEY)) {
+            setInterval(function() { autoSyncFromGist(); }, 2 * 60 * 1000);
+        }
+        setInterval(function() { saveWorkorders(); saveWarehouseRecords(); }, 30 * 60 * 1000);
+    } catch(err) {
+        console && console.error && console.error('初始化失败:', err);
+        alert('页面初始化失败：' + (err && err.message ? err.message : err));
+    }
 }
 
 // ========== 工单操作 ==========
@@ -673,11 +693,11 @@ function onDeviceChange() {
     else { var vendor = deviceVendorMap[d] || '其他'; s.innerHTML = '<option value="'+vendor+'">'+vendor+'</option>'; }
 }
 
-function confirmCreate() {
+async function confirmCreate() {
     var btn = document.getElementById('confirm-btn');
     btn.disabled = true;
     btn.textContent = '创建中...';
-    setTimeout(function() {
+    try {
         var order = {
             id: generateOrderNo(), dept: document.getElementById('edit-dept').value,
             person: document.getElementById('edit-person').value, phone: document.getElementById('edit-phone').value,
@@ -687,21 +707,26 @@ function confirmCreate() {
         };
         workorders.unshift(order);
         saveWorkorders();
-        uploadToGist(true);
         updateVendorFilter();
         renderWorkorders();
         renderDashboard();
         document.getElementById('analysis-result').style.display = 'none';
         document.getElementById('ai-input').value = '';
-        document.getElementById('success-content').innerHTML = '<p>工单号：<strong>'+order.id+'</strong></p><p>机构：'+order.dept+'</p><p>设备：'+order.device+'</p><p>运维商：'+order.vendor+'</p><p>状态：'+order.status+'</p>';
+        document.getElementById('success-content').innerHTML = '<p>工单号：<strong>'+escapeHtml(order.id)+'</strong></p><p>机构：'+escapeHtml(order.dept)+'</p><p>设备：'+escapeHtml(order.device)+'</p><p>运维商：'+escapeHtml(order.vendor)+'</p><p>状态：'+escapeHtml(order.status)+'</p>';
         document.getElementById('success-result').style.display = 'block';
-        btn.disabled = false; btn.textContent = '确认生成工单';
         // 显示同步状态
         var token = localStorage.getItem(GIST_TOKEN_KEY);
         if (!token) {
             document.getElementById('success-content').innerHTML += '<div class="alert alert-warning mt-2 mb-0 py-2" style="font-size:12px">未配置 GitHub Token，工单仅保存在本地</div>';
+        } else {
+            btn.textContent = '同步中...';
+            try { await uploadToGist(false); }
+            catch(e) { document.getElementById('success-content').innerHTML += '<div class="alert alert-danger mt-2 mb-0 py-2" style="font-size:12px">云端同步失败：'+escapeHtml(e.message)+'</div>'; }
         }
-    }, 300);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '确认生成工单';
+    }
 }
 
 function deleteWorkorder(id) {
@@ -739,13 +764,13 @@ function updateRemark(id, remark) {
 function showOrderDetail(id) {
     var order = workorders.find(function(o) { return o.id === id; });
     if (!order) return;
-    var detail = '<table class="table table-sm"><tr><td style="width:80px;font-weight:bold">工单号</td><td>'+order.id+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">机构</td><td>'+(order.dept||'')+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">报修人</td><td>'+(order.person||'')+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">运维商</td><td>'+(order.vendor||'')+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">故障描述</td><td style="word-break:break-all">'+(order.description||'')+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">备注</td><td style="word-break:break-all">'+(order.remark||'')+'</td></tr>';
-    detail += '<tr><td style="font-weight:bold">状态</td><td>'+(order.status||'')+'</td></tr>';
+    var detail = '<table class="table table-sm"><tr><td style="width:80px;font-weight:bold">工单号</td><td>'+escapeHtml(order.id)+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">机构</td><td>'+escapeHtml(order.dept)+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">报修人</td><td>'+escapeHtml(order.person)+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">运维商</td><td>'+escapeHtml(order.vendor)+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">故障描述</td><td style="word-break:break-all">'+escapeHtml(order.description)+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">备注</td><td style="word-break:break-all">'+escapeHtml(order.remark)+'</td></tr>';
+    detail += '<tr><td style="font-weight:bold">状态</td><td>'+escapeHtml(order.status)+'</td></tr>';
     detail += '<tr><td style="font-weight:bold">创建时间</td><td>'+new Date(order.create_time).toLocaleString()+'</td></tr>';
     if (order.complete_time) detail += '<tr><td style="font-weight:bold">完成时间</td><td>'+new Date(order.complete_time).toLocaleString()+'</td></tr>';
     detail += '</table>';
@@ -766,7 +791,8 @@ function renderWorkorders() {
         var descShort = (o.description || '').substring(0, 15);
         var statusColor = o.status === '响应中' ? '#007bff' : o.status === '审批中' ? '#6f42c1' : '#28a745';
         var completeTime = o.complete_time ? new Date(o.complete_time).toLocaleString() : '-';
-        html += '<tr><td style="font-size:12px">'+o.id+'</td><td style="font-size:12px">'+(o.dept||'')+'</td><td style="font-size:12px">'+(o.device||'')+'</td><td style="font-size:12px;max-width:100px;overflow:hidden;text-overflow:ellipsis"><a href="javascript:void(0)" onclick="showOrderDetail(\''+o.id+'\')" title="'+(o.description||'')+'">'+descShort+'</a></td><td><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+o.id+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px">'+(o.vendor||'-')+'</td><td style="max-width:80px;overflow:hidden"><input type="text" class="form-control form-control-sm" value="'+(o.remark||'')+'" placeholder="备注" onchange="updateRemark(\''+o.id+'\', this.value)" style="width:100%;font-size:12px;padding:2px;height:24px;"></td><td style="font-size:12px">'+ct.toLocaleDateString()+'</td><td style="font-size:12px;color:'+(o.status==='已完成'?'#28a745':'#999')+'">'+completeTime+'</td><td><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+o.id+'\')">删除</button></td></tr>';
+        var oid = safeId(o.id);
+        html += '<tr><td style="font-size:12px">'+escapeHtml(o.id)+'</td><td style="font-size:12px">'+escapeHtml(o.dept)+'</td><td style="font-size:12px">'+escapeHtml(o.device)+'</td><td style="font-size:12px;max-width:100px;overflow:hidden;text-overflow:ellipsis"><a href="javascript:void(0)" onclick="showOrderDetail(\''+oid+'\')" title="'+escapeHtml(o.description)+'">'+escapeHtml(descShort)+'</a></td><td><select class="status-select" style="color:'+statusColor+'" onchange="updateStatus(\''+oid+'\', this.value)"><option value="响应中"'+(o.status==='响应中'?' selected':'')+'>响应中</option><option value="审批中"'+(o.status==='审批中'?' selected':'')+'>审批中</option><option value="已完成"'+(o.status==='已完成'?' selected':'')+'>已完成</option></select></td><td style="font-size:12px">'+escapeHtml(o.vendor||'-')+'</td><td style="max-width:80px;overflow:hidden"><input type="text" class="form-control form-control-sm" value="'+escapeHtml(o.remark)+'" placeholder="备注" onchange="updateRemark(\''+oid+'\', this.value)" style="width:100%;font-size:12px;padding:2px;height:24px;"></td><td style="font-size:12px">'+ct.toLocaleDateString()+'</td><td style="font-size:12px;color:'+(o.status==='已完成'?'#28a745':'#999')+'">'+completeTime+'</td><td><button class="btn btn-danger btn-sm py-0" onclick="deleteWorkorder(\''+oid+'\')">删除</button></td></tr>';
     });
     document.querySelector('#workorder-table tbody').innerHTML = html;
     document.getElementById('page-info').textContent = '共' + filtered.length + '条 第' + currentPage + '/' + totalPages + '页';
@@ -815,7 +841,7 @@ function showPendingDetails() {
             var days = Math.floor((now - new Date(o.create_time)) / 86400000);
             var hours = Math.floor(((now - new Date(o.create_time)) % 86400000) / 3600000);
             var duration = days > 0 ? days + '天' + hours + '小时' : hours + '小时';
-            html += '<tr><td>'+o.id+'</td><td>'+o.dept+'</td><td>'+o.device+'</td><td>'+new Date(o.create_time).toLocaleString()+'</td><td><strong>'+duration+'</strong></td></tr>';
+            html += '<tr><td>'+escapeHtml(o.id)+'</td><td>'+escapeHtml(o.dept)+'</td><td>'+escapeHtml(o.device)+'</td><td>'+new Date(o.create_time).toLocaleString()+'</td><td><strong>'+duration+'</strong></td></tr>';
         });
         html += '</tbody></table>';
     } else { html = '<p class="text-center text-muted">暂无未完成工单</p>'; }
@@ -835,7 +861,7 @@ function showLongTailDetails() {
             var days = Math.floor((new Date() - new Date(o.create_time)) / 86400000);
             var hours = Math.floor(((new Date() - new Date(o.create_time)) % 86400000) / 3600000);
             var duration = days > 0 ? days + '天' + hours + '小时' : hours + '小时';
-            html += '<tr><td>'+o.id+'</td><td>'+o.dept+'</td><td>'+o.device+'</td><td>'+new Date(o.create_time).toLocaleString()+'</td><td><strong class="text-danger">'+duration+'</strong></td></tr>';
+            html += '<tr><td>'+escapeHtml(o.id)+'</td><td>'+escapeHtml(o.dept)+'</td><td>'+escapeHtml(o.device)+'</td><td>'+new Date(o.create_time).toLocaleString()+'</td><td><strong class="text-danger">'+duration+'</strong></td></tr>';
         });
         html += '</tbody></table>';
     } else { html = '<p class="text-center text-muted">暂无长尾工单</p>'; }
@@ -888,7 +914,7 @@ function updateVendorFilter() {
 
 function renderVendors() {
     var html = '';
-    vendors.forEach(function(v, idx) { html += '<tr><td>'+v.type+'</td><td>'+v.vendor+'</td><td>'+v.contact+'</td><td>'+v.phone+'</td><td><button class="btn btn-link btn-sm p-0" onclick="editVendor('+idx+')">编辑</button></td></tr>'; });
+    vendors.forEach(function(v, idx) { html += '<tr><td>'+escapeHtml(v.type)+'</td><td>'+escapeHtml(v.vendor)+'</td><td>'+escapeHtml(v.contact)+'</td><td>'+escapeHtml(v.phone)+'</td><td><button class="btn btn-link btn-sm p-0" onclick="editVendor('+idx+')">编辑</button></td></tr>'; });
     document.querySelector('#vendor-table tbody').innerHTML = html;
 }
 
@@ -1028,7 +1054,7 @@ function renderWarehouse() {
             ? '<button class="btn btn-outline-danger btn-sm py-0 px-1 me-1" onclick="outboundWhRecord(' + r.id + ')">出库</button>'
             : '<span class="text-muted me-1">-</span>';
         actionHtml += '<button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="deleteWhRecord(' + r.id + ')">删除</button>';
-        html += '<tr><td>' + (start + i + 1) + '</td><td>' + r.inDate + '</td><td>' + r.name + '</td><td>' + r.category + '</td><td>' + r.qty + '</td><td>' + (r.remark || '') + '</td><td>' + statusHtml + '</td><td>' + outDateHtml + '</td><td>' + actionHtml + '</td></tr>';
+        html += '<tr><td>' + (start + i + 1) + '</td><td>' + escapeHtml(r.inDate) + '</td><td>' + escapeHtml(r.name) + '</td><td>' + escapeHtml(r.category) + '</td><td>' + r.qty + '</td><td>' + escapeHtml(r.remark) + '</td><td>' + statusHtml + '</td><td>' + escapeHtml(outDateHtml) + '</td><td>' + actionHtml + '</td></tr>';
     });
     if (!html) html = '<tr><td colspan="9" class="text-center text-muted">暂无记录</td></tr>';
     document.getElementById('warehouse-table').innerHTML = html;
@@ -1326,7 +1352,13 @@ async function syncFromGist() {
         var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
-        var content = JSON.parse(data.files['workorders.json'].content);
+        var file = data.files && data.files['workorders.json'];
+        if (!file || !file.content) {
+            alert('云端暂无工单数据，请先在管理端创建并同步。');
+            return;
+        }
+        var content = JSON.parse(file.content);
+        if (!Array.isArray(content)) throw new Error('云端数据格式异常');
         var newCount = mergeGistWorkorders(content);
         if (hasEncKey()) { content.forEach(function(n) { decryptWorkorder(n); }); }
         saveWorkorders();
@@ -1343,7 +1375,10 @@ async function autoSyncFromGist() {
         var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID);
         if (!res.ok) return;
         var data = await res.json();
-        var content = JSON.parse(data.files['workorders.json'].content);
+        var file = data.files && data.files['workorders.json'];
+        if (!file || !file.content) return; // 云端暂无数据，静默跳过
+        var content = JSON.parse(file.content);
+        if (!Array.isArray(content)) return;
         var newCount = mergeGistWorkorders(content);
         if (newCount > 0) {
             if (hasEncKey()) { content.forEach(function(n) { decryptWorkorder(n); }); }
@@ -1352,7 +1387,8 @@ async function autoSyncFromGist() {
             renderDashboard();
         }
     } catch(err) {
-        console.log('自动同步未完成（可手动点击同步按钮）：' + err.message);
+        // 静默失败，仅开发者控制台可见，避免噪音
+        console && console.warn && console.warn('自动同步未完成：', err && err.message);
     }
 }
 
@@ -1399,9 +1435,80 @@ async function uploadToGist(showMsg, callback) {
             return;
         }
         if (callback) callback(true);
-    } catch(err) { 
+    } catch(err) {
         if (showMsg === true) alert('云端同步失败：' + err.message);
         if (callback) callback(false);
+    }
+}
+
+// 设备数据同步到 Gist（写入 deviceData.json）
+async function syncDevicesToGist() {
+    var token = localStorage.getItem(GIST_TOKEN_KEY);
+    if (!token) { alert('请先在"系统设置"中配置 GitHub Token'); return; }
+    var btn = document.querySelector('button[onclick="syncDevicesToGist()"]');
+    if (!btn) return;
+    var oldText = btn.innerText;
+    btn.disabled = true; btn.innerText = '☁️ 同步中...';
+    try {
+        var payload = JSON.stringify({ orgMap: orgMap, deviceData: deviceData }, null, 2);
+        var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID, {
+            method: 'PATCH',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                description: '设备数据同步',
+                files: { 'deviceData.json': { content: payload } }
+            })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        saveDeviceData();
+        alert('✅ 设备数据已同步到云端');
+    } catch(err) {
+        alert('设备同步失败：' + err.message);
+    } finally {
+        btn.disabled = false; btn.innerText = oldText;
+    }
+}
+
+// 从 Gist 拉取设备数据
+async function syncDevicesFromGist() {
+    var btn = document.querySelector('button[onclick="syncDevicesFromGist()"]');
+    if (!btn) return;
+    var oldText = btn.innerText;
+    btn.disabled = true; btn.innerText = '📥 拉取中...';
+    try {
+        var res = await fetch('https://api.github.com/gists/' + FIXED_GIST_ID);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var data = await res.json();
+        var file = data.files && data.files['deviceData.json'];
+        if (!file || !file.content) throw new Error('云端暂无设备数据');
+        var parsed = JSON.parse(file.content);
+        if (!parsed || typeof parsed !== 'object') throw new Error('云端数据格式异常');
+
+        var choice = window.confirm(
+            '云端有 ' + Object.keys(parsed.deviceData || {}).length + ' 个网点的设备数据。\n' +
+            '点击"确定"= 合并（本地优先，云端补全本地缺失的网点）\n' +
+            '点击"取消"= 放弃拉取'
+        );
+        if (!choice) return;
+
+        if (parsed.orgMap) {
+            // 合并 orgMap：本地优先
+            Object.keys(parsed.orgMap).forEach(function(name) {
+                if (!(name in orgMap)) orgMap[name] = parsed.orgMap[name];
+            });
+        }
+        var remote = parsed.deviceData || {};
+        Object.keys(remote).forEach(function(code) {
+            if (!deviceData[code]) deviceData[code] = remote[code];
+        });
+        saveDeviceData();
+        renderOrgs();
+        updateDeviceOrgSelect();
+        alert('✅ 已合并云端设备数据');
+    } catch(err) {
+        alert('拉取失败：' + err.message);
+    } finally {
+        btn.disabled = false; btn.innerText = oldText;
     }
 }
 
