@@ -432,20 +432,21 @@
                 if (!res.ok) throw new Error('网络请求失败');
                 
                 const data = await res.json();
-                const content = data.files['workorders.json']?.content;
-                
+                const file = data.files && data.files['workorders.json'];
+                const content = file && file.content;
+
                 if (content) {
                     const newData = JSON.parse(content);
+                    if (!Array.isArray(newData)) throw new Error('云端数据格式异常');
                     workorders = newData;
                     workorders.forEach(function(o) { decryptWorkorder(o); });
                     localStorage.setItem('workorders_query', JSON.stringify(workorders));
                     renderResults(workorders);
                     if (!silent) showSyncStatus('数据已更新: ' + new Date().toLocaleTimeString() + ' (' + workorders.length + '条工单)');
                 } else {
-                    throw new Error('未找到工单数据');
+                    if (!silent) showSyncStatus('云端暂无工单数据');
                 }
             } catch(err) {
-                console.log('同步失败:', err.message);
                 if (!silent) {
                     if (workorders.length > 0) {
                         showSyncStatus('使用本地缓存，同步失败: ' + err.message);
@@ -482,9 +483,10 @@
                 document.getElementById('results').innerHTML = '<div class="empty-state" style="background:rgba(255,255,255,0.1);border-radius:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>暂无工单数据</p><p style="font-size:12px;opacity:0.7">请在管理系统中创建工单</p></div>';
                 return;
             }
-            
+
             orders.sort((a, b) => new Date(b.create_time) - new Date(a.create_time));
-            
+            const esc = s => s == null ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
             let html = '';
             orders.forEach(order => {
                 decryptWorkorder(order);
@@ -493,10 +495,10 @@
                 const status = order.status || '响应中';
                 const vendor = order.vendor || '其他';
                 const contactInfo = vendorContacts[vendor] || { contact: '', phone: '' };
-                
-                html += '<div class="result-card"><div class="row-group dept-row"><span class="row-label">网点名称</span><span class="row-value">' + (order.dept || '-') + '</span></div><div class="row-group"><span class="row-label">工单号</span><span class="row-value">' + order.id + '</span><span class="row-label" style="margin-left:20px">报修日期</span><span class="row-value">' + date + '</span></div><div class="row-group"><span class="row-label">运维商</span><span class="row-value">' + vendor + '</span><span class="row-label" style="margin-left:20px">状态</span><span class="row-value"><span class="status-badge status-' + status + '">' + status + '</span></span></div><div class="row-group"><span class="row-label">维修人员</span><span class="row-value">' + contactInfo.contact + '</span>' + (contactInfo.phone ? '<a href="tel:' + contactInfo.phone + '" class="row-value" style="color:#1976d2;text-decoration:none;margin-left:10px">' + contactInfo.phone + '</a>' : '') + '</div><div class="row-group desc-row"><span class="row-label">故障描述</span><span class="row-value">' + desc + '</span></div>' + (order.remark ? '<div class="row-group" style="background:#fff9c4;border-radius:8px;margin-top:8px"><span class="row-label">备　注</span><span class="row-value">' + order.remark + '</span></div>' : '') + '</div>';
+
+                html += '<div class="result-card"><div class="row-group dept-row"><span class="row-label">网点名称</span><span class="row-value">' + esc(order.dept || '-') + '</span></div><div class="row-group"><span class="row-label">工单号</span><span class="row-value">' + esc(order.id) + '</span><span class="row-label" style="margin-left:20px">报修日期</span><span class="row-value">' + date + '</span></div><div class="row-group"><span class="row-label">运维商</span><span class="row-value">' + esc(vendor) + '</span><span class="row-label" style="margin-left:20px">状态</span><span class="row-value"><span class="status-badge status-' + esc(status) + '">' + esc(status) + '</span></span></div><div class="row-group"><span class="row-label">维修人员</span><span class="row-value">' + esc(contactInfo.contact) + '</span>' + (contactInfo.phone ? '<a href="tel:' + esc(contactInfo.phone) + '" class="row-value" style="color:#1976d2;text-decoration:none;margin-left:10px">' + esc(contactInfo.phone) + '</a>' : '') + '</div><div class="row-group desc-row"><span class="row-label">故障描述</span><span class="row-value">' + esc(desc) + '</span></div>' + (order.remark ? '<div class="row-group" style="background:#fff9c4;border-radius:8px;margin-top:8px"><span class="row-label">备　注</span><span class="row-value">' + esc(order.remark) + '</span></div>' : '') + '</div>';
             });
-            
+
             document.getElementById('results').innerHTML = html;
         }
         
